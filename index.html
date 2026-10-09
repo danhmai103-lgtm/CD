@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kiểm tra chứng chỉ chất lượng thép cuộn cán nóng</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.0/tesseract.min.js"></script>
+<style>
+:root{--ink:#17212b;--bg:#e8ecef;--panel:#fff;--line:#c9d1d8;--soft:#f3f5f7;--muted:#5c6b78;--teal:#0e5a6b;--teal2:#0a3f4c;--ok:#17784f;--okbg:#e3f4ec;--warn:#8f5a00;--warnbg:#fdf0d5;--bad:#b3261e;--badbg:#fbe5e3}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 "Be Vietnam Pro","Segoe UI",Arial,sans-serif;font-variant-numeric:tabular-nums}
+header{background:var(--teal2);color:#fff;border-bottom:4px solid #c8cfd5;padding:16px 28px 0;position:sticky;top:0;z-index:100}
+.top{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+h1{margin:0;font-size:20px;font-weight:700}.sub{font-size:12px;color:#a9c4cc;margin-top:2px}
+.tabs{display:flex;gap:4px;margin-top:14px}
+.tab{border:0;background:transparent;color:#a9c4cc;padding:10px 18px;font:600 14px inherit;font-family:inherit;cursor:pointer;border-radius:6px 6px 0 0}
+.tab.on{background:var(--bg);color:var(--teal2)}
+.wrap{max-width:1640px;margin:0 auto;padding:22px 24px 50px}
+.page{display:none}.page.on{display:block}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:6px;padding:12px 16px}
+.kpi b{display:block;font-size:26px;line-height:1.2}.kpi span{font-size:12px;color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:6px;margin-top:16px;padding:18px 20px}
+.ph{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.ph h2{margin:0;font-size:16px}.ph p{margin:2px 0 0;font-size:12px;color:var(--muted);max-width:760px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+button.b{font:600 13px "Be Vietnam Pro",sans-serif;border-radius:6px;padding:8px 13px;cursor:pointer;border:1px solid var(--teal);background:#fff;color:var(--teal)}
+button.b.p{background:var(--teal);color:#fff}button.b.d{border-color:var(--bad);color:var(--bad)}
+button.b:hover{filter:brightness(.95)}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid #2b8aa0;outline-offset:1px}
+.grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.f{background:var(--soft);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+.f label{display:block;font-size:11px;color:var(--muted);font-weight:600}
+.f input,.f select,.f textarea{width:100%;border:0;background:transparent;font:600 14px "Be Vietnam Pro",sans-serif;color:var(--ink);padding:3px 0 0;resize:vertical}
+.msg{font-size:12px;color:var(--muted);margin:0 0 10px;padding:8px 10px;background:var(--soft);border-left:3px solid var(--line);border-radius:3px}
+.msg.ok{border-color:var(--ok);color:var(--ok)}.msg.err{border-color:var(--bad);color:var(--bad)}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:6px;max-height:520px}
+table{border-collapse:collapse;width:100%;font-size:12px}
+th,td{border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:5px 6px;text-align:center;white-space:nowrap}
+th{background:#dde5ea;font-weight:600;position:sticky;top:0;z-index:2}
+th.g{background:#c3d6dd;color:var(--teal2)}
+#h3 tr:nth-child(2) th{top:28px}
+input.c{width:68px;padding:4px;border:1px solid transparent;border-radius:4px;text-align:center;font:inherit;background:transparent}
+input.c.w{width:104px}input.c.x{width:150px}input.c:hover{border-color:var(--line)}input.c:focus{border-color:#2b8aa0;background:#fff}
+.x2{border:0;background:none;color:var(--bad);cursor:pointer;font-size:15px}
+.tg{display:inline-block;padding:2px 9px;border-radius:99px;font-weight:700;font-size:11px}
+.tg.ok{background:var(--okbg);color:var(--ok)}.tg.warn{background:var(--warnbg);color:var(--warn)}.tg.bad{background:var(--badbg);color:var(--bad)}.tg.info{background:#e1eef2;color:var(--teal)}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.dl{font-weight:700}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.bar{height:8px;background:#dfe5ea;border-radius:9px;overflow:hidden;margin:12px 0}.bar i{display:block;height:100%;background:var(--ok);width:0}
+.search{padding:7px 10px;border:1px solid var(--line);border-radius:6px;font:inherit;width:220px}
+/* ===== Báo cáo ===== */
+.report{background:#fff;border:1px solid var(--line);max-width:1180px;margin:0 auto;padding:30px 36px}
+.report h1{color:var(--teal2);font-size:19px;text-align:center;margin:0}.report .sb{text-align:center;color:var(--muted);font-size:12px;margin:2px 0 16px}
+.report h3{font-size:13px;margin:18px 0 6px;border-bottom:2px solid var(--teal);padding-bottom:3px;color:var(--teal2)}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 24px;font-size:12px}.kv div{border-bottom:1px dotted var(--line);padding:3px 0}.kv b{color:var(--muted);font-weight:600}
+.report table{font-size:10px}.report td,.report th{padding:3px 4px}.report th{position:static}
+.sign{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;text-align:center;margin-top:30px;font-size:12px}.sign div{height:90px}
+
+input.c.okc{color:var(--ok);font-weight:700}input.c.ngc{color:var(--bad);font-weight:700;background:var(--badbg)}
+.sf label,.ckr label{display:inline-flex;align-items:center;gap:3px;cursor:pointer;font-weight:600}.sf input,.ckr input{width:16px;height:16px;accent-color:var(--teal)}
+.ckg{font-weight:700;color:var(--teal2);margin:16px 0 4px;padding-bottom:3px;border-bottom:2px solid var(--teal)}
+.ckr{display:grid;grid-template-columns:1fr 90px 120px;gap:12px;align-items:start;padding:8px 4px;border-bottom:1px dotted var(--line);font-size:13px}
+.report label{cursor:pointer;font-weight:600}.report input[type=checkbox]{width:14px;height:14px;vertical-align:-2px;accent-color:#0e5a6b}
+.fn{font-size:11px;color:var(--muted);margin:8px 2px 0}
+.kpis.k5{grid-template-columns:repeat(5,1fr)}
+.stk{display:flex;height:22px;border-radius:6px;overflow:hidden;margin:6px 0 10px;background:#dfe5ea}.stk i{display:block}
+.lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12px}.lg u{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;text-decoration:none}
+.hb{display:grid;grid-template-columns:170px 1fr 46px;gap:10px;align-items:center;font-size:12px;margin:7px 0}.hb span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hb div{height:12px;background:#dfe5ea;border-radius:9px;overflow:hidden}.hb i{display:block;height:100%}.hb b{text-align:right}
+.toast{position:fixed;right:20px;bottom:20px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:6px;font-size:13px;opacity:0;transform:translateY(8px);transition:.2s;pointer-events:none;z-index:50;max-width:380px}.toast.show{opacity:1;transform:none}.toast.ok{background:var(--ok)}.toast.err{background:var(--bad)}
+tr.cur td{background:#e8f3f6}.sm{padding:4px 9px!important;font-size:12px!important}
+@media(max-width:1000px){.kpis.k5{grid-template-columns:1fr 1fr}.kpis{grid-template-columns:1fr 1fr}.grid{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.kv{grid-template-columns:1fr}}
+@media print{
+ @page{size:A4 landscape;margin:10mm}
+ body{background:#fff}header,.no-print,#p0,#p1{display:none!important}
+ #p2{display:block!important}.wrap{padding:0;max-width:none}.report{border:0;padding:0;max-width:none}
+ .tg{border:1px solid #999}h3,tr{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header class="no-print">
+  <div class="top">
+    <div><h1>Kiểm tra chứng chỉ chất lượng thép cuộn cán nóng (HRC)</h1><div class="sub">Đối chiếu dữ liệu MTC của nhà cung cấp với kết quả đo kiểm thực tế khi nhập hàng</div></div>
+  </div>
+  <nav class="tabs"><button class="tab on" data-t="p0">Dashboard theo dõi</button><button class="tab" data-t="p1">Kiểm tra &amp; đối chiếu</button><button class="tab" data-t="p2">Báo cáo xuất PDF</button></nav>
+</header>
+
+<div id="toast" class="toast no-print"></div>
+<main class="wrap">
+<!-- ================= TRANG 1 ================= -->
+<!-- ================= TRANG 0: DASHBOARD ================= -->
+<div id="p0" class="page on">
+  <div class="ph" style="margin-bottom:14px">
+    <div><h2 style="font-size:18px">Dashboard theo dõi chất lượng nguyên liệu HRC</h2><p>Tổng hợp các phiếu kiểm tra đã bấm “Lưu lại”. Dữ liệu được lưu ngay trên trình duyệt của máy này; dùng “Sao lưu” để chuyển sang máy khác.</p></div>
+    <div class="btns"><button class="b p" onclick="newRec(true)">+ Phiếu kiểm tra mới</button><button class="b" onclick="exportRecs()">Tải danh sách Excel</button><button class="b" onclick="backup()">Sao lưu (JSON)</button><button class="b" onclick="pick('fRest')">Khôi phục</button></div>
+  </div>
+  <input type="file" id="fRest" hidden accept=".json">
+  <div class="kpis k5" id="dK"></div>
+  <section class="two">
+    <div class="panel"><div class="ph"><div><h2>Quyết định theo phiếu</h2></div></div><div id="dDec"></div></div>
+    <div class="panel"><div class="ph"><div><h2>Tỷ lệ cuộn đạt – 10 phiếu gần nhất</h2></div></div><div id="dRecent"></div></div>
+  </section>
+  <section class="panel"><div class="ph"><div><h2>Theo nhà cung cấp</h2></div></div>
+    <div class="tw" style="max-height:260px"><table class="ns"><thead><tr><th style="text-align:left">Nhà cung cấp</th><th>Số phiếu</th><th>Số cuộn</th><th>Cuộn lấy mẫu</th><th>Tỷ lệ đạt</th><th>Phiếu bị từ chối</th></tr></thead><tbody id="dSup"></tbody></table></div></section>
+  <section class="panel">
+    <div class="ph"><div><h2>Danh sách phiếu đã lưu</h2></div>
+      <div class="btns"><input class="search" id="dQ" placeholder="Tìm nhà cung cấp / số chứng chỉ / PO…" oninput="renderDash()">
+      <select class="search" id="dF" style="width:180px" onchange="renderDash()"><option value="">Tất cả quyết định</option><option>Chấp nhận</option><option>Giữ lại xem xét</option><option>Từ chối</option><option>Chờ quyết định</option></select></div></div>
+    <div class="tw"><table class="ns"><thead><tr><th>Ngày lưu</th><th>Nhà cung cấp</th><th>Số chứng chỉ</th><th>Mác thép / tiêu chuẩn</th><th>Số cuộn</th><th>Cuộn mẫu</th><th>Tỷ lệ đạt</th><th>Quyết định</th><th>Người kiểm tra</th><th></th></tr></thead><tbody id="dList"></tbody></table></div>
+  </section>
+</div>
+
+<!-- ================= TRANG 1 ================= -->
+<div id="p1" class="page">
+  <div class="btns no-print" style="justify-content:flex-end;margin-bottom:12px"><button class="b" onclick="newRec(false)">Phiếu mới</button><button class="b p" onclick="saveRec()">Lưu lại</button></div>
+  <div class="kpis">
+    <div class="kpi"><b id="kCoils">0</b><span>Cuộn trong chứng chỉ MTC</span></div>
+    <div class="kpi"><b id="kSamp">0</b><span>Cuộn đã lấy mẫu kiểm tra</span></div>
+    <div class="kpi"><b id="kMatch">—</b><span>Tỷ lệ cuộn đạt (khớp số cuộn + C, Si, Mn, P, S)</span></div>
+    <div class="kpi"><b id="kStat"><span class="tg info">Chờ dữ liệu</span></b><span>Đánh giá chung trước khi nhập kho</span></div>
+  </div>
+
+  <section class="panel">
+    <div class="ph"><div><h2>1 · Thông tin chứng chỉ</h2><p>Các trường tự thay đổi theo file chứng chỉ vừa nhập ở mục 2 (Excel / PDF / scan). Bạn có thể sửa trực tiếp.</p></div></div>
+    <div class="grid">
+      <div class="f"><label>Nhà cung cấp</label><input id="iSup"></div>
+      <div class="f"><label>Số chứng chỉ</label><input id="iCert"></div>
+      <div class="f"><label>Số hợp đồng / PO</label><input id="iPO"></div>
+      <div class="f"><label>Mác thép / tiêu chuẩn</label><input id="iSpec"></div>
+      <div class="f"><label>Ngày cấp</label><input id="iDate"></div>
+      <div class="f"><label>Số lô nhập</label><input id="iLot"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="ph">
+      <div><h2>2 · Dữ liệu chứng chỉ MTC của nhà cung cấp</h2><p>Nhập từ file Excel (EDI) hoặc PDF chứng chỉ (Mill Certificate). Hỗ trợ cột SỐ CUỘN / COIL No. / Coil Number… File PDF/Excel dạng scan ảnh (không có chữ) sẽ không đọc được – cần file có text hoặc Excel.</p></div>
+      <div class="btns">
+        <input class="search" id="q2" placeholder="Tìm số cuộn / số mẻ…" oninput="renderMTC()">
+        <button class="b p" onclick="pick('f2')">Nhập từ Excel / PDF / scan</button>
+        <button class="b" onclick="loadSample()">Nạp dữ liệu mẫu</button>
+        <button class="b" onclick="addMTC()">+ Thêm cuộn</button>
+        <button class="b" onclick="dl(2)">Tải xuống Excel</button>
+        <button class="b d" onclick="clr(2)">Xóa hết</button>
+      </div>
+    </div>
+    <input type="file" id="f2" hidden accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg,.webp,.bmp,.tif,.tiff">
+    <p class="msg" id="m2">Chưa có dữ liệu. Chọn “Nhập từ Excel / PDF / ảnh”. Hỗ trợ: Excel, PDF có chữ, PDF scan, Excel scan (chèn ảnh) và ảnh chụp bảng; cột nhận diện: SỐ CUỘN / COIL No. Với file scan, hệ thống tự nhận dạng chữ (OCR) – hãy rà soát lại số liệu.</p>
+    <div class="tw"><table id="t2"><thead id="h2"></thead><tbody id="b2"></tbody></table></div>
+  </section>
+
+  <section class="panel">
+    <div class="ph">
+      <div><h2>3 · Biên bản kiểm tra nguyên liệu đầu vào</h2><p>Theo mẫu biên bản của Quy định QĐ04-QA. Thành phần hóa học và cơ tính lấy từ MTC (tự điền khi chọn số cuộn có trong bảng 2); QC nhập độ dày và khổ thực tế.</p></div>
+      <div class="btns">
+        <button class="b p" onclick="pick('f3')">Nhập từ Excel / PDF / scan</button>
+        <button class="b" onclick="rand3()">Chọn ngẫu nhiên 3 cuộn</button>
+        <button class="b" onclick="addAct()">+ Thêm cuộn</button>
+        <button class="b" onclick="dl(3)">Tải xuống Excel</button>
+        <button class="b d" onclick="clr(3)">Xóa hết</button>
+      </div>
+    </div>
+    <input type="file" id="f3" hidden accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg,.webp,.bmp,.tif,.tiff">
+    <p class="msg" id="m3">Quy trình: chọn cuộn mẫu → đo độ dày, khổ thực tế. Ô dung sai để trống sẽ dùng dung sai mặc định bên dưới.</p>
+    <datalist id="coilList"></datalist>
+    <div class="tw"><table class="ns"><thead id="h3"></thead><tbody id="b3"></tbody></table></div>
+    <p class="fn">(*) Được quy định theo tiêu chuẩn sản phẩm hoặc TDS thỏa thuận giữa Nam Kim và nhà cung cấp. Ô để trống ở cột dung sai sẽ dùng dung sai mặc định bên dưới.</p>
+  </section>
+
+  <section class="two">
+    <div class="panel">
+      <div class="ph"><div><h2>Dung sai kích thước</h2></div></div>
+      <div class="grid" style="grid-template-columns:repeat(2,1fr)">
+        <div class="f"><label>Dung sai độ dày mặc định ± mm</label><input id="tolThick" type="number" step="0.01" value="0.05" oninput="renderAct()"></div>
+        <div class="f"><label>Dung sai khổ (chiều rộng) ± mm</label><input id="tolW" type="number" value="2" oninput="recalc()"></div>
+      </div>
+      <p class="msg" style="margin-top:12px">Dung sai độ dày/khổ chỉ dùng để tô màu cảnh báo. Cuộn được tính là ĐẠT khi (1) số cuộn ở bảng 3 có trong bảng 2 và (2) C, Si, Mn, P, S ở bảng 3 lệch so với bảng 2 không quá ±0,1 / ±0,02 / ±0,005 / ±0,0005 tùy chữ số có nghĩa đầu tiên của giá trị MTC (ví dụ 0,16 → ±0,1; 0,007 → ±0,005).</p>
+    </div>
+    <div class="panel">
+      <div class="ph"><div><h2>Kết luận của QC</h2></div></div>
+      <div class="f"><label>Kết luận (QC nhập tay)</label><textarea id="iConc" rows="6" placeholder=""></textarea></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="ph">
+      <div><h2>4 · Yêu cầu theo QĐ04-QA (4.1 – 4.3)</h2><p>Tick “Đạt” hoặc “Không đạt” cho từng yêu cầu; bấm lại ô đã tick để bỏ chọn hoặc đổi. Mục chưa tick được tính là chưa đánh giá.</p></div>
+      <div class="f" style="min-width:230px"><label>Loại nhà cung cấp</label><select id="iSupType" onchange="renderCk()"><option value="new">Nhà cung cấp mới</option><option value="old">Nhà cung cấp cũ, chất lượng ổn định</option></select></div>
+    </div>
+    <div id="ckList"></div>
+  </section>
+
+  <section class="panel">
+    <div class="ph"><div><h2>5 · Truy xuất &amp; phê duyệt</h2><p>Lưu liên kết giữa chứng chỉ nhà cung cấp và bằng chứng đo kiểm theo cùng số cuộn / số mẻ.</p></div></div>
+    <div class="grid">
+      <div class="f"><label>Người kiểm tra (QC)</label><input id="iQC" placeholder="Họ và tên"></div>
+      <div class="f"><label>Ngày kiểm tra</label><input id="iQDate" type="date"></div>
+      <div class="f"><label>Phòng thử / thiết bị</label><input id="iEq" placeholder="Mã thiết bị"></div>
+      <div class="f"><label>Phương pháp lấy mẫu</label><input id="iSamp" value="Ngẫu nhiên 3 cuộn"></div>
+      <div class="f"><label>Quyết định cuối cùng</label><select id="iDec"><option>Chờ quyết định</option><option>Chấp nhận</option><option>Giữ lại xem xét</option><option>Từ chối</option></select></div>
+    </div>
+    <div class="f" style="margin-top:10px"><label>Ghi chú</label><textarea id="iNote" rows="2"></textarea></div>
+  </section>
+</div>
+
+<!-- ================= TRANG 2: BÁO CÁO ================= -->
+<div id="p2" class="page">
+  <div class="btns no-print" style="max-width:1180px;margin:0 auto 14px;justify-content:flex-end">
+    <button class="b" onclick="renderReport()">Cập nhật báo cáo</button>
+    <button class="b p" onclick="saveRec()">Lưu lại</button>
+    <button class="b p" onclick="exportPDF()">Xuất PDF</button>
+  </div>
+  <p class="msg no-print" style="max-width:1180px;margin:0 auto 14px">Bấm “Xuất PDF”, trong hộp thoại in chọn máy in “Lưu dưới dạng PDF” (khổ A4 ngang đã được thiết lập sẵn).</p>
+  <article class="report" id="report"></article>
+</div>
+</main>
+
+<script>
+const $=id=>document.getElementById(id);
+const CHEM=['C','Si','Mn','P','S','Al','N','Cu','Ni','Cr','B','Mo','V','Ti','Sn','Nb'];
+const MC=[['coil','Số cuộn','','w'],['thick','Dày','mm'],['width','Rộng','mm'],['len','Dài','mm'],['wt','Khối lượng','kg'],['heat','Số mẻ'],['spec','Tiêu chuẩn','','x'],
+ ['dir','Hướng'],['ypt','YPT'],['ys','YS','MPa'],['ts','TS','MPa'],['el','EL','%'],['bend','Uốn'],...CHEM.map(c=>[c,c])];
+let mtc=[],act=[];
+const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const num=v=>{if(v===''||v==null)return null;const n=typeof v==='number'?v:parseFloat(String(v).replace(/,/g,''));return isNaN(n)?null:n};
+const fix=v=>{const n=num(v);return n==null?'':+n.toPrecision(7)};
+const cev=r=>{const c=num(r.C),m=num(r.Mn);if(c==null||m==null)return '';const g=k=>num(r[k])||0;return (c+m/6+(g('Cr')+g('Mo')+g('V'))/5+(g('Ni')+g('Cu'))/15).toFixed(3)};
+const msg=(id,t,c='')=>{const e=$(id);e.textContent=t;e.className='msg '+c};
+const pick=id=>$(id).click();
+
+/* ---------- Tab ---------- */
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('on',p.id===b.dataset.t));
+  if(b.dataset.t==='p2')renderReport();
+  if(b.dataset.t==='p0')renderDash();
+});
+
+/* ---------- Phân tích file ---------- */
+const ALIAS={
+  coil:['coilno','coil','coilnumber','coil no','coilno.','nocoil','no.coil','socuon','so cuon','số cuộn','sốcuộn','cuon','macuon','mã cuộn','socuonthep','coilid','socoil','coil id','so coil','số coil','coil number','so cuon thep','stt cuon','ma so cuon'],
+  thick:['thickness','thick','day','doday','độdày','doday','thicknessmm','dày','daymm','do day','độ dày'],
+  width:['width','rong','chieurong','chiềurộng','rộng','widthmm','khổ','kho','chieu rong','chiều rộng'],
+  len:['length','dai','chiềudài','chieudai','dài','chieu dai'],
+  wt:['netweight','weight','actualwt','khoiluong','khốilượng','netwt','grossweight','trọnglượng','trongluong','kl','mass','khoi luong','net weight'],
+  heat:['heatno','heat','sốmẻ','some','sốme','heatnumber','sốlô','solo','mẻ','me','so me','số mẻ','heat no','so lo'],
+  spec:['specification','tieuchuan','tiêuchuẩn','grade','mác','mac','standard','spec','tieu chuan','mác thép'],
+  ys:['ys','yieldstrength','yield','giớihạnchả','gioihanchay','yp','rp02','re','gioi han chay','ys mpa'],
+  ts:['ts','tensilestrength','tensile','độbềnkéo','dobenkeo','rm','uts','do ben keo','ts mpa'],
+  el:['el','elongation','độgiãn','dogian','a50','a80','elong','do gian','el %'],
+  dir:['dir','direction','hướng','huong'],
+  ypt:['ypt'],
+  bend:['bending','bend','uốn','uon'],
+  contract:['contractno','hopdong','hợpđồng','po','pono','sốhđ','sohd','contract','so hop dong','hợp đồng']
+};
+const norm=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/[^a-z0-9]/g,'');
+/* header khớp linh hoạt: chứa keyword, keyword chứa header, hoặc khớp gần */
+function matchAlias(n, keys){
+  if(!n)return false;
+  for(const k of keys){
+    const nk=norm(k);
+    if(!nk)continue;
+    if(n===nk||n.includes(nk)||(nk.length>=3&&nk.includes(n)))return true;
+    // khớp khi header là "socuon" và key là "so cuon" (đã norm)
+    if(nk.length>=4 && n.length>=3 && (n.includes(nk.slice(0,4))||nk.includes(n.slice(0,4))))return true;
+  }
+  return false;
+}
+function isCoilLike(v){
+  const s=String(v??'').trim().replace(/[\s\-_/./]/g,'');
+  if(!s)return false;
+  // 5–14 chữ số, hoặc 1–4 chữ cái + 5+ số (phổ biến ở các nhà máy thép)
+  return /^\d{5,14}$/.test(s) || /^[A-Za-z]{1,4}\d{5,14}$/.test(s);
+}
+/* ===== Đọc Excel: hỗ trợ tiêu đề nhiều dòng (song ngữ), hệ số ×100/×1.000/×10.000, mã cuộn dạng chữ+số ===== */
+const FIELD={coil:['socuon','coilno','coilnumber','macuon'],thick:['thickness','doday'],width:['width','dorong','chieurong'],len:['length','chieudai'],
+  wt:['netweight','khoiluong','weight'],heat:['heatno','heat','mesonau'],ys:['yield','gioihanchay'],ts:['tensile','gioihanben'],el:['elongation','dogiandai','giandai'],
+  bend:['bending','thuuon'],dir:['direction','huong']};
+const EXACT={ys:['ys','yp','rp02'],ts:['ts','uts','rm'],el:['el','a50'],spec:['specification','spec','grade','tieuchuan','mac','macthep'],dir:['dir']};
+const DEFSC={C:100,Si:100,Mn:100,S:1000,P:1000,Cu:1000,Ni:1000,Cr:1000,Mo:1000,V:10000,Ti:10000,Al:10000,B:10000};
+const cellStr=v=>v instanceof Date?v.toLocaleDateString('vi-VN'):String(v??'').trim();
+function parseGrid(rows,opts){
+  opts=opts||{};
+  rows=rows.map(r=>(r||[]).map(cellStr));
+  const ncol=Math.max(0,...rows.slice(0,400).map(r=>r.length));
+  /* 1. cột SỐ CUỘN = cột có nhiều ô khớp dạng mã cuộn nhất */
+  let coilCol=-1,best=0;
+  for(let j=0;j<ncol;j++){let n=0;for(const r of rows)if(isCoilLike(r[j]))n++;if(n>best){best=n;coilCol=j}}
+  if(opts.pos){coilCol=opts.pos.coil;best=Math.max(best,1)}
+  if(coilCol<0||best<1)return null;
+  const first=rows.findIndex(r=>isCoilLike(r[coilCol]));
+  if(first<0)return null;
+  /* 2. vùng tiêu đề: từ dòng chứa "STT" (nếu có) đến dòng dữ liệu đầu tiên */
+  let hs=-1;
+  for(let i=first-1;i>=Math.max(0,first-10);i--)if(rows[i].some(c=>norm(c)==='stt')){hs=i;break}
+  if(hs<0)hs=Math.max(0,first-6);
+  const hdr=rows.slice(hs,first);
+  /* 3. hệ số (x 100, x 1.000, x 10.000) – điền tiếp sang các cột bên phải */
+  const scale=[];
+  hdr.forEach(r=>{let cur=null;for(let j=0;j<ncol;j++){const m=/^[x×]\s*([\d.,]+)$/i.exec(r[j]||'');if(m){cur=+m[1].replace(/[.,]/g,'');if(!isNaN(cur)&&cur>0)scale[j]=cur;else cur=null}else if(cur&&!r[j]&&scale[j]==null&&hdr.some(q=>/^[x×]/i.test(q[j]||'')===false)&&false)scale[j]=cur}
+    let c=null;for(let j=0;j<ncol;j++){if(/^[x×]\s*[\d.,]+$/i.test(r[j]||'')){c=scale[j]}else if(c&&scale[j]==null&&!(r[j]))scale[j]=c;else if(r[j])c=null}});
+  const isUnit=c=>/^[x×]\s*[\d.,]+$/i.test(c||'');
+  const all=[],last=[];
+  for(let j=0;j<ncol;j++){const cs=hdr.map(r=>r[j]).filter(c=>c&&!isUnit(c));all[j]=norm(cs.join(' '));last[j]=norm(cs[cs.length-1]||'')}
+  const map={coil:coilCol};
+  for(let j=0;j<ncol;j++){
+    if(j===coilCol)continue;
+    let done=false;
+    for(const k in FIELD)if(!(k in map)&&FIELD[k].some(w=>all[j].includes(w))){map[k]=j;done=true;break}
+    if(done)continue;
+    for(const k in EXACT)if(!(k in map)&&EXACT[k].includes(last[j])){map[k]=j;done=true;break}
+    if(done)continue;
+    const c=CHEM.find(x=>x.toLowerCase()===last[j]||(last[j]==='sai'&&x==='Al'));if(c&&!(c in map))map[c]=j;
+  }
+  if(opts.pos)Object.assign(map,opts.pos);
+  /* 4. thông tin đầu chứng chỉ */
+  const meta={},top=rows.slice(0,hs);let grade='',std='',total='';
+  for(const r of top)for(let j=0;j<r.length;j++){
+    const lb=norm(r[j]);if(!lb)continue;
+    let v='';for(let k=j+1;k<r.length;k++)if(r[k]){v=r[k].replace(/^[:\s]+/,'');break}
+    if(!v&&r[j].includes(':'))v=r[j].split(':').slice(1).join(':').trim();
+    if(!v)continue;
+    if(/^sono/.test(lb))meta.cert=meta.cert||v;
+    else if(/^ngaydate/.test(lb))meta.date=meta.date||v;
+    else if(/^macthep|^grade/.test(lb))grade=grade||v;
+    else if(/^tieuchuan|^standard/.test(lb))std=std||v;
+    else if(/^hopdong|^contract/.test(lb))meta.contract=meta.contract||v;
+    else if(lb==='mill'||/^nhamay/.test(lb))meta.supplier=meta.supplier||v;
+    else if(/^tongsocuon|^totalcoils/.test(lb))total=total||v;
+  }
+  meta.spec=(std+' '+grade).trim();
+  /* 5. dữ liệu */
+  const out=[];
+  for(const r of rows.slice(first)){
+    if(!isCoilLike(r[coilCol]))continue;
+    const o={};for(const k in map)o[k]=r[map[k]];
+    o.coil=String(r[coilCol]).replace(/[\s\-_/.]/g,'').toUpperCase();
+    ['thick','width','wt','ys','ts','el'].forEach(k=>{if(k in o)o[k]=fix(o[k])});
+    if('len' in o)o.len=num(o.len)==null?String(o.len||''):fix(o.len);
+    CHEM.forEach(c=>{if(c in map){const v=num(o[c]);const s=scale[map[c]]||(opts.defScale?DEFSC[c]:0);o[c]=v==null?'':+(s?v/s:v).toPrecision(6)}});
+    o.heat=String(o.heat??'').trim();o.spec=String(o.spec??meta.spec).trim()||meta.spec;
+    out.push(o);
+  }
+  let note='';
+  if(out.length&&out.every(o=>o.wt!==''&&o.wt!=null&&o.wt<1000)){out.forEach(o=>o.wt=Math.round(o.wt*1000));note=' (khối lượng trong file là tấn, đã đổi sang kg)'}
+  const tn=parseInt(String(total).replace(/\D/g,''));
+  if(tn)note+=tn===out.length?' · khớp tổng số cuộn ghi trên chứng chỉ ('+tn+')':' · ⚠ chứng chỉ ghi '+tn+' cuộn nhưng đọc được '+out.length+' – hãy kiểm tra';
+  const sc=CHEM.filter(c=>c in map&&scale[map[c]]).length;
+  if(sc)note+=' · đã quy đổi hóa học theo hệ số ×100/×1.000/×10.000';
+  return {rows:out,meta,note};
+}
+function readSheet(buf){
+  const wb=XLSX.read(buf,{type:'array',cellDates:true});
+  let best=null;
+  for(const sn of wb.SheetNames){
+    const rows=XLSX.utils.sheet_to_json(wb.Sheets[sn],{header:1,defval:'',raw:true});
+    const r=parseGrid(rows);if(r&&r.rows.length&&(!best||r.rows.length>best.rows.length))best=r;
+  }
+  if(!best)throw new Error('Không tìm thấy cột “SỐ CUỘN / COIL No.” (mã cuộn dạng số hoặc chữ+số, ví dụ IA026374192) trong file Excel.');
+  return best;
+}
+/* items: [{s,x,y}] — dùng chung cho PDF; tách ra để dễ kiểm thử */
+function parseItems(items,tol){
+  items=items.slice().sort((a,b)=>b.y-a.y);
+  const lines=[];
+  for(const it of items){const L=lines[lines.length-1];if(L&&Math.abs(L.y-it.y)<=(tol||5))L.it.push(it);else lines.push({y:it.y,it:[it]})}
+  const toks=lines.map(L=>L.it.sort((a,b)=>a.x-b.x).map(i=>i.s.trim()).join(' ').split(/\s+/).filter(Boolean));
+  const text=toks.map(t=>t.join(' ')).join('\n');
+  let exp=[2,2,2,3,3,3,4];
+  const first=toks.findIndex(t=>/^\d{6,}$/.test(String(t[0]).replace(/\D/g,''))&&t.length>=12);
+  for(let i=0;i<(first<0?toks.length:first);i++){const t=toks[i];if(t.length===7&&t.every(x=>/^[2-5]$/.test(x))){exp=t.map(Number);break}}
+  const rows=[];
+  for(const t of toks){
+    const c0=String(t[0]||'').replace(/[\s\-_/./]/g,'');
+    // chấp nhận số cuộn 6+ chữ số (thường 8–12), dòng có ít nhất vài cột số
+    if(!/^\d{6,14}$/.test(c0)||t.length<6)continue;
+    const [coilRaw,thick,width,len,wt,heat,dir,ypt,ys,ts,el,bend,...rest]=t;
+    const coil=String(coilRaw).replace(/[\s\-_/./]/g,'');
+    const o={coil,thick:fix(thick),width:fix(width),len,wt:fix(wt),heat:heat||'',dir:dir||'',ypt:ypt||'',ys:fix(ys),ts:fix(ts),el:fix(el),bend:bend||''};
+    ['C','Si','Mn','P','S','Al','N'].forEach((c,i)=>{const v=num(rest[i]);o[c]=v==null?'':+(v/Math.pow(10,exp[i]||2)).toPrecision(6)});
+    rows.push(o);
+  }
+  // fallback: quét toàn bộ text tìm các số giống coil
+  if(!rows.length){
+    for(const t of toks){
+      const joined=t.join(' ');
+      const m=joined.match(/\b(\d{6,14})\b/);
+      if(!m)continue;
+      const nums=t.map(x=>num(x)).filter(v=>v!=null);
+      if(nums.length<3)continue;
+      // tránh nhầm số cuộn với các số đo: lấy số dài nhất làm coil
+      const coilCand=t.map(x=>String(x).replace(/\D/g,'')).filter(s=>/^\d{6,14}$/.test(s)).sort((a,b)=>b.length-a.length)[0]||m[1];
+      rows.push({coil:coilCand,thick:nums[0],width:nums[1],len:nums[2],wt:nums[3]??'',heat:'',dir:'',ypt:'',ys:nums[4]??'',ts:nums[5]??'',el:nums[6]??'',bend:''});
+    }
+  }
+  const g=re=>(text.match(re)||[])[1]||'';
+  const spec=(text.match(/\b(?:JIS|ASTM|SAE|EN)\s+[A-Z]?\s?\d{3,5}(?::\d{4})?\s+[A-Z0-9]+/)||[''])[0];
+  rows.forEach(r=>r.spec=spec);
+  return {rows,meta:{contract:g(/CONTRACT NO.?\s+(\w+)/i)||g(/HỢP ĐỒNG[:\s]+(\w+)/i)||g(/PO[:\s#]+(\w+)/i),
+    cert:g(/CERTIFICATE NO.?\s+(\w+)/i)||g(/SỐ CHỨNG CHỈ[:\s]+(\w+)/i),
+    date:g(/ISSUE DATE\s+([\d\/\-]+)/i)||g(/NGÀY CẤP[:\s]+([\d\/\-]+)/i),
+    spec,
+    supplier:/FORMOSA HA TINH STEEL/i.test(text)?'Formosa Hà Tĩnh Steel Corporation':(/NAM KIM/i.test(text)?'Tôn Nam Kim':''),
+    note:''}};
+}
+/* ===== OCR cho file scan (PDF scan, Excel scan, ảnh chụp) ===== */
+const IMG=/\.(png|jpe?g|webp|bmp|tiff?)$/i;
+const fixTok=s=>{const d=s.replace(/[^A-Za-z0-9]/g,'');const dg=(d.match(/\d/g)||[]).length;
+  return d.length>=6&&dg/d.length>=.85?d.replace(/[Oo]/g,'0').replace(/[Il|]/g,'1').replace(/S/g,'5').replace(/B/g,'8'):s};
+const nv=x=>{x=String(x).replace(/[^\d.,]/g,'');if(!x)return null;
+  x=/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(x)?x.replace(/,/g,''):x.replace(',','.');const n=parseFloat(x);return isNaN(n)?null:n};
+let ocrW=null,ocrLog=()=>{};
+async function ocrWorker(){
+  if(typeof Tesseract==='undefined')throw new Error('Chưa tải được thư viện OCR (Tesseract.js). Hãy kiểm tra kết nối mạng rồi tải lại trang.');
+  if(!ocrW){ocrW=await Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text')ocrLog(m.progress)}});
+    await ocrW.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'})}
+  return ocrW;
+}
+/* phóng to ảnh nhỏ để OCR đọc chính xác số liệu */
+async function bigCanvas(src){
+  const bmp=await createImageBitmap(src),k=Math.min(3,Math.max(1,2800/bmp.width));
+  const cv=document.createElement('canvas');cv.width=Math.round(bmp.width*k);cv.height=Math.round(bmp.height*k);
+  const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);g.drawImage(bmp,0,0,cv.width,cv.height);return cv;
+}
+async function ocrSrc(src,mid,label,off){
+  const w=await ocrWorker();ocrLog=p=>msg(mid,'Đang nhận dạng chữ (OCR) '+label+': '+Math.round(p*100)+'%…');
+  if(!(src instanceof HTMLCanvasElement))src=await bigCanvas(src);
+  const r=await w.recognize(src);
+  return (r.data.words||[]).filter(x=>x.text.trim()&&x.confidence>20).map(x=>({s:x.text.trim(),x:x.bbox.x0,y:-(x.bbox.y0+x.bbox.y1)/2-off*20000,h:x.bbox.y1-x.bbox.y0}));
+}
+const CHEM_SEQ=[['C',100],['Si',100],['Mn',100],['S',1000],['P',1000],['Cu',1000],['Ni',1000],['Cr',1000],['Mo',1000],['V',10000],['Ti',10000],['Al',10000],['B',10000],['Ca',10000],['Nb',10000],['CEV',100]];
+const COIL_RE=/^(?=.*[A-Za-z])[A-Za-z0-9]{2,4}\d{8,12}$/;
+function parseOcr(items,note){
+  const hs=items.map(i=>i.h||10).sort((a,b)=>a-b),tol=Math.max(6,(hs[hs.length>>1]||10)*.6);
+  let meta={};try{meta=parseItems(items,tol).meta||{}}catch(e){}
+  items=items.slice().sort((a,b)=>b.y-a.y);const lines=[];
+  for(const it of items){const L=lines[lines.length-1];if(L&&Math.abs(L.y-it.y)<=tol)L.it.push(it);else lines.push({y:it.y,it:[it]})}
+  const alltext=lines.map(L=>L.it.sort((a,b)=>a.x-b.x).map(i=>i.s).join(' ')).join('\n');
+  const g=re=>(alltext.match(re)||[])[1]||'';
+  meta.cert=meta.cert||g(/S[oố]\/?\s*No\.?\s*[:.]?\s*([\w\-\/]{6,})/i);
+  meta.date=meta.date||g(/Date\s*[:.]?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i);
+  const mg=g(/Grade\s*[:.]?\s*([A-Z]{2,4}\s?\d{3,5}\w*)/),sd=g(/Standard\s*[:.]?\s*([A-Z]{2,4}\s?[A-Z]?\d{2,5}(?::\d{4})?)/);
+  if(!meta.spec&&(mg||sd))meta.spec=(sd+' '+mg).trim();
+  if(!meta.supplier){const m=g(/MILL\s*[:.]?\s*(.{8,70}?)\s*(?:ADD|\n|$)/);if(m)meta.supplier=m}
+  const total=parseInt(g(/Total\s*Coils\s*[:.]?\s*(\d{1,5})/i))||0;
+  const hasScale=/x\s*10[.,]?000|x\s*1[.,]000/i.test(alltext);
+  const rows=[],seen=new Set();
+  for(const L of lines){
+    const t=L.it.map(i=>fixTok(i.s));
+    let ci=t.findIndex(x=>/^\d{8,14}$/.test(x)||COIL_RE.test(x));if(ci<0)continue;
+    let coil=t[ci].toUpperCase();
+    if(/^[0-9][A-Z]\d{9}$/.test(coil))coil=({1:'I',0:'O',5:'S',8:'B',4:'A'}[coil[0]]||coil[0])+coil.slice(1);
+    if(seen.has(coil))continue;seen.add(coil);
+    const o={coil,thick:'',width:'',len:'',wt:'',heat:'',spec:meta.spec||'',dir:'',ypt:'',ys:'',ts:'',el:'',bend:''};
+    const tail=[];
+    for(const x of t.filter((_,i)=>i!==ci)){
+      if(/^(\d{5,7}|\d{2}[A-Za-z]\d{6})$/.test(x)&&!o.heat){o.heat=x;continue}
+      if(/^(đạt|dat|ok|pass)\.?$/i.test(x)){o.bend='OK';continue}
+      if(/^[Cc]$/.test(x)&&!o.len){o.len='C';continue}
+      const v=nv(x);if(v==null||x.length>9)continue;
+      if(o.thick===''&&v>.3&&v<=25&&/[.,]/.test(x)){o.thick=v;continue}
+      if(o.width===''&&Number.isInteger(v)&&v>=500&&v<=2300){o.width=v;continue}
+      if(o.wt===''&&((v>=2500&&Number.isInteger(v))||(v>=2&&v<100&&/[.,]/.test(x)&&o.thick!==''))){o.wt=v;continue}
+      if(o.ys===''&&o.wt!==''&&v>=100&&v<=600){o.ys=v;continue}
+      if(o.ts===''&&o.ys!==''&&v>o.ys&&v<=800){o.ts=v;continue}
+      if(o.el===''&&o.ts!==''&&v>=10&&v<=70){o.el=v;continue}
+      if(o.el!=='')tail.push(v);
+    }
+    /* Hóa học: nếu đủ 16 giá trị cuối dòng theo thứ tự C Si Mn S P Cu Ni Cr Mo V Ti Al B Ca Nb CEV */
+    if(tail.length>=16&&(hasScale||true)){
+      const seq=tail.slice(-16);
+      CHEM_SEQ.forEach(([k,s],i)=>{if(CHEM.includes(k))o[k]=+(seq[i]/s).toPrecision(6)});
+    }
+    if(['thick','width','wt','heat'].filter(k=>o[k]!=='').length<2){seen.delete(coil);continue}
+    if(o.wt!==''&&o.wt<1000)o.wt=Math.round(o.wt*1000);
+    rows.push(o);
+  }
+  if(!rows.length)throw new Error('OCR không tìm thấy SỐ CUỘN / COIL No. trong file. Hãy dùng ảnh/scan rõ nét, đủ sáng, không bị nghiêng (200–300 dpi).');
+  let n=(note||'')+' (nhận dạng bằng OCR – số cuộn và số liệu có thể sai, hãy đối chiếu với bản gốc; cột không đọc được để trống)';
+  if(total)n+=total===rows.length?' · khớp tổng số cuộn ('+total+')':' · chứng chỉ ghi '+total+' cuộn, đọc được '+rows.length+' (ảnh có thể chỉ chụp một phần)';
+  return {rows,meta,note:n};
+}
+/* ===== OCR theo lưới bảng: tìm đường kẻ dọc → tách từng cột → đọc từng cột → ghép lại thành bảng ===== */
+const POS29={coil:1,thick:2,width:3,len:4,wt:5,heat:6,ys:7,ts:8,el:9,bend:11,C:12,Si:13,Mn:14,S:15,P:16,Cu:17,Ni:18,Cr:19,Mo:20,V:21,Ti:22,Al:23,B:24,Nb:26};
+function detectGrid(dark,W,H){
+  const vr=new Int32Array(W),vs=new Int32Array(W);
+  for(let x=0;x<W;x++){let b=0,c=0,bs=0;for(let y=0;y<H;y++){if(dark[y*W+x]){c++;if(c>b){b=c;bs=y-c+1}}else c=0}vr[x]=b;vs[x]=bs}
+  const cl=[];for(let x=0;x<W;x++)if(vr[x]>=H*.12){const L=cl[cl.length-1];if(L&&x-L[L.length-1]<=8)L.push(x);else cl.push([x])}
+  if(!cl.length)return{lines:[],top:0};
+  return{lines:cl.map(c=>Math.round(c.reduce((a,b)=>a+b)/c.length)),top:Math.min(...cl.map(c=>Math.min(...c.map(x=>vs[x]))))};
+}
+function stripLines(dark,W,H){
+  const mh=Math.round(W*.02),mv=Math.round(H*.03),out=dark.slice();
+  for(let y=0;y<H;y++){let x=0;while(x<W){if(dark[y*W+x]){let j=x;while(j<W&&dark[y*W+j])j++;if(j-x>=mh)out.fill(0,y*W+x,y*W+j);x=j}else x++}}
+  for(let x=0;x<W;x++){let y=0;while(y<H){if(dark[y*W+x]){let j=y;while(j<H&&dark[j*W+x])j++;if(j-y>=mv)for(let k=y;k<j;k++)out[k*W+x]=0;y=j}else y++}}
+  return out;
+}
+function eraseMask(dark,clean,W,H,pad){
+  const m=new Uint8Array(W*H);
+  for(let y=0;y<H;y++)for(let x=0;x<W;x++)if(dark[y*W+x]&&!clean[y*W+x]){
+    for(let dy=-pad;dy<=pad;dy++){const yy=y+dy;if(yy<0||yy>=H)continue;for(let dx=-pad;dx<=pad;dx++){const xx=x+dx;if(xx>=0&&xx<W)m[yy*W+xx]=1}}}
+  return m;
+}
+function rowBands(ink,W,H,x0,x1,y0){
+  const thr=Math.max(2,(x1-x0)*.004);let B=[],s=-1;
+  for(let y=y0;y<H;y++){let c=0;for(let x=x0;x<x1;x++)c+=ink[y*W+x];
+    if(c>thr){if(s<0)s=y}else if(s>=0){B.push([s,y-1]);s=-1}}
+  if(s>=0)B.push([s,H-1]);
+  B=B.filter(b=>b[1]-b[0]>=4);if(!B.length)return B;
+  const med=B.map(b=>b[1]-b[0]).sort((a,b)=>a-b)[B.length>>1],M=[B[0].slice()];
+  for(const b of B.slice(1)){const L=M[M.length-1];if(b[0]-L[1]<med*.35)L[1]=b[1];else M.push(b.slice())}
+  return M;
+}
+function bandsToGrid(ws,bands,nc){
+  const g=bands.map(()=>Array(nc).fill('')),rw=bands.map(()=>[]);
+  const med=bands.map(b=>b[1]-b[0]).sort((a,b)=>a-b)[bands.length>>1]||20;
+  ws.forEach(w=>{let bi=-1,bd=1e9;bands.forEach((b,i)=>{const d=Math.abs((b[0]+b[1])/2-w.y);if(d<bd){bd=d;bi=i}});if(bi>=0&&bd<=med*.9)rw[bi].push(w)});
+  rw.forEach((l,i)=>l.sort((a,b)=>a.x-b.x).forEach(w=>{g[i][w.col]=(g[i][w.col]+' '+w.s).trim()}));
+  return g;
+}
+function wordsToGrid(ws,ncol){
+  const hs=ws.map(w=>w.h).sort((a,b)=>a-b),tol=Math.max(6,(hs[hs.length>>1]||10)*.6),rows=[];
+  ws.sort((a,b)=>a.y-b.y);
+  for(const w of ws){const R=rows[rows.length-1];if(R&&Math.abs(R.y-w.y)<=tol){R.w.push(w);R.y=(R.y*(R.w.length-1)+w.y)/R.w.length}else rows.push({y:w.y,w:[w]})}
+  return rows.map(R=>{const g=Array(ncol).fill('');R.w.sort((a,b)=>a.x-b.x).forEach(w=>{g[w.col]=(g[w.col]+' '+w.s).trim()});return g});
+}
+const fixCoil=(s,force)=>{
+  let t=String(s).replace(/[^A-Za-z0-9]/g,'').toUpperCase();
+  if((force||/[A-Z]/.test(t.slice(0,2)))&&/^[A-Z0-9]{2}[0-9OILSBZGQD]{9}$/.test(t)){
+    const L={0:'O',1:'I',5:'S',8:'B',2:'Z',6:'G',4:'A'},D={O:'0',I:'1',L:'1',S:'5',B:'8',Z:'2',G:'6',Q:'0',D:'0'};
+    t=t.slice(0,2).replace(/\d/g,d=>L[d]||d)+t.slice(2).replace(/[A-Z]/g,c=>D[c]||c)}
+  return t;
+};
+function metaFromText(text){
+  const g=re=>(text.match(re)||[])[1]||'',m={};
+  m.cert=g(/S[oố0]\s*\/?\s*No\.?\s*[:.]?\s*([\w\-\/]{6,})/i);m.date=g(/Date\s*[:.]?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i);
+  m.contract=g(/Contract\s*No\.?\s*[:.]?\s*([\w.\/\-]{6,})/i);
+  const mg=g(/Grade\s*[:.]?\s*([A-Z]{2,4}\s?\d{3,5}\w*)/),sd=g(/Standard\s*[:.]?\s*([A-Z]{2,4}\s?[A-Z]?\d{2,5}(?::\d{4})?)/);
+  m.spec=(sd+' '+mg).trim();const s=g(/MILL\s*[:.]?\s*(.{8,70}?)(?:\s+ADD|\n|$)/);if(s)m.supplier=s;
+  m.total=parseInt(g(/Total\s*Coils\s*[:.]?\s*(\d{1,5})/i))||0;
+  return m;
+}
+async function ocrPage(cv,mid,label){
+  const W=cv.width,H=cv.height,d=cv.getContext('2d').getImageData(0,0,W,H).data,dark=new Uint8Array(W*H);
+  for(let i=0,p=0;i<W*H;i++,p+=4)dark[i]=(d[p]*.3+d[p+1]*.59+d[p+2]*.11)<170?1:0;
+  const {lines,top}=detectGrid(dark,W,H);
+  if(lines.length<8)return null;
+  const clean=stripLines(dark,W,H),er=eraseMask(dark,clean,W,H,2),c2=document.createElement('canvas');c2.width=W;c2.height=H;
+  const ctx=c2.getContext('2d'),id=ctx.getImageData(0,0,W,H);ctx.drawImage(cv,0,0);const od=ctx.getImageData(0,0,W,H);
+  for(let i=0,p=0;i<W*H;i++,p+=4){const v=er[i]?255:(od.data[p]*.3+od.data[p+1]*.59+od.data[p+2]*.11);id.data[p]=id.data[p+1]=id.data[p+2]=v;id.data[p+3]=255}
+  ctx.putImageData(id,0,0);
+  const w=await ocrWorker(),ws=[],t0=Math.max(0,top-4),nc=lines.length-1;
+  await w.setParameters({tessedit_char_whitelist:'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz.,',tessedit_pageseg_mode:'6'});
+  for(let i=0;i<nc;i++){
+    const wd=lines[i+1]-lines[i]-12;if(wd<20)continue;
+    msg(mid,'Đang nhận dạng bảng (OCR) '+label+': cột '+(i+1)+'/'+nc+'…');
+    const r=await w.recognize(c2,{rectangle:{left:lines[i]+6,top:t0,width:wd,height:H-t0}});
+    (r.data.words||[]).forEach(x=>{if(x.text.trim()&&x.confidence>15)ws.push({col:i,x:x.bbox.x0,y:(x.bbox.y0+x.bbox.y1)/2,h:x.bbox.y1-x.bbox.y0,s:x.text.trim()})});
+  }
+  const ink=new Uint8Array(W*H);for(let i=0;i<W*H;i++)ink[i]=clean[i]&&!er[i]?1:0;
+  const bands=rowBands(ink,W,H,lines[0],lines[nc],t0);
+  let grid=bands.length>=3?bandsToGrid(ws,bands,nc):wordsToGrid(ws,nc);
+  /* số cuộn: nếu đa số có 2 chữ cái đầu thì ép tất cả theo dạng đó (I/1, O/0…) */
+  const cand=[];grid.forEach(r=>r.forEach(c=>{const t=fixCoil(c,true);if(/^[A-Z]{2}\d{9}$/.test(t))cand.push(c)}));
+  const byLetter=cand.filter(c=>/[A-Z]/.test(fixCoil(c).slice(0,2))).length,force=cand.length>0&&byLetter/cand.length>=.5;
+  grid=grid.map(r=>r.map(c=>{const f=fixCoil(c,force);return /^[A-Z0-9]{10,13}$/.test(f)&&isCoilLike(f)?f:c}));
+  if(nc===29){
+    const dec=[2,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27];
+    grid=grid.map((r,ri)=>{r=r.slice();dec.forEach(j=>{const c=String(r[j]).replace(/[.,]+$/,'');r[j]=/^\d{2,6}$/.test(c)?c.slice(0,-2)+'.'+c.slice(-2):c});
+      if(!isCoilLike(r[1])&&/^\d{3,4}$/.test(r[3]||'')&&+r[3]>=500&&+r[3]<=2300&&/\d{4,6}/.test(String(r[5]).replace(/\D/g,'')))r[1]='CHUA'+String(100000+ri).slice(1);
+      r[5]=String(r[5]).replace(/^(\d{1,3})[.,](\d{3})$/,'$1$2');
+      r[6]=String(r[6]).replace(/^(\d{2})([0-9])(\d{6})$/,(m,a,b,c)=>a+({6:'G',4:'A',0:'O',8:'B',5:'S'}[b]||b)+c);
+      return r});
+  }
+  const res=parseGrid(grid,{pos:nc===29?POS29:null,defScale:true});
+  if(!res||!res.rows.length)return null;
+  res.rows.forEach(o=>{                      // bỏ giá trị vô lý do OCR đọc sai (để trống cho QC nhập tay)
+    CHEM.forEach(c=>{if(o[c]!==''&&o[c]!=null&&(o[c]>2.5||o[c]<0))o[c]=''});
+    if(o.thick>25)o.thick='';if(o.ys!==''&&(o.ys<100||o.ys>800))o.ys='';if(o.ts!==''&&(o.ts<200||o.ts>1000))o.ts='';if(o.el!==''&&(o.el<5||o.el>80))o.el='';});
+  let meta={};
+  if(t0>60){                                   // đọc phần thông tin đầu chứng chỉ
+    await w.setParameters({tessedit_char_whitelist:'',tessedit_pageseg_mode:'6'});
+    const r=await w.recognize(c2,{rectangle:{left:0,top:0,width:W,height:t0}});meta=metaFromText(r.data.text||'');
+  }
+  return {rows:res.rows,meta:{...res.meta,...Object.fromEntries(Object.entries(meta).filter(([,v])=>v&&v!==0))},total:meta.total||0};
+}
+async function ocrDoc(srcs,mid,label,fb){
+  const rows=[],seen=new Set();let meta={},total=0,fbItems=[];
+  for(let i=0;i<srcs.length;i++){
+    const cv=srcs[i] instanceof HTMLCanvasElement?srcs[i]:await bigCanvas(srcs[i]),lb=label+(srcs.length>1?' '+(i+1)+'/'+srcs.length:'');
+    const r=await ocrPage(cv,mid,lb);
+    if(r){r.rows.forEach(x=>{if(!seen.has(x.coil)){seen.add(x.coil);rows.push(x)}});meta={...meta,...Object.fromEntries(Object.entries(r.meta).filter(([,v])=>v))};total=total||r.total}
+    else fbItems.push(...await ocrSrc(cv,mid,lb,i));
+  }
+  if(rows.length){
+    const unk=rows.filter(x=>/^CHUA\d{5}$/.test(x.coil)).length;
+    let n=(unk?' · '+unk+' cuộn chưa đọc được số cuộn (mã tạm CHUAxxxxx) – hãy nhập tay':'')+' ('+fb+', nhận dạng OCR theo từng cột – hãy đối chiếu với bản gốc; cột không đọc được để trống)';
+    if(total)n+=total===rows.length?' · khớp tổng số cuộn ghi trên chứng chỉ ('+total+')':' · chứng chỉ ghi '+total+' cuộn, đọc được '+rows.length+' – hãy kiểm tra các dòng thiếu';
+    return {rows,meta,note:n};
+  }
+  return parseOcr(fbItems,' ('+fb+')');
+}
+async function pdfToCanvases(buf){
+  const pdf=await pdfjsLib.getDocument({data:buf.slice(0)}).promise,out=[];
+  for(let p=1;p<=pdf.numPages;p++){
+    const pg=await pdf.getPage(p),v0=pg.getViewport({scale:1}),vp=pg.getViewport({scale:Math.min(4,Math.max(2,2800/v0.width))});
+    const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
+    const g=cv.getContext('2d');g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);
+    await pg.render({canvasContext:g,viewport:vp}).promise;out.push(cv);
+  }
+  return out;
+}
+async function readPdf(buf,mid){
+  pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const pdf=await pdfjsLib.getDocument({data:buf.slice(0)}).promise,items=[];
+  for(let p=1;p<=pdf.numPages;p++){const tc=await(await pdf.getPage(p)).getTextContent();
+    tc.items.forEach(t=>{if(t.str.trim())items.push({s:t.str,x:t.transform[4],y:t.transform[5]-(p-1)*3000,h:t.height||10})})}
+  if(items.length>=10){
+    const r=parseItems(items);if(r.rows.length)return r;
+    try{return parseOcr(items,'')}catch(e){}              // lớp chữ có sẵn nhưng bố cục khác
+  }
+  msg(mid,'PDF là bản scan (ảnh) – đang chuyển sang nhận dạng chữ (OCR), có thể mất vài chục giây…');
+  return ocrDoc(await pdfToCanvases(buf),mid,'trang','PDF scan');
+}
+async function ocrXlsxImages(buf,mid){
+  if(typeof JSZip==='undefined')return null;
+  const z=await JSZip.loadAsync(buf),names=Object.keys(z.files).filter(n=>/^xl\/media\/.+\.(png|jpe?g|bmp|gif|webp|tiff?)$/i.test(n));
+  if(!names.length)return null;
+  const blobs=[];for(const n of names)blobs.push(new Blob([await z.files[n].async('uint8array')]));
+  return ocrDoc(blobs,mid,'ảnh','Excel scan');
+}
+async function parseFile(f,mid){
+  const buf=await f.arrayBuffer(),ext=f.name.split('.').pop().toLowerCase();
+  if(IMG.test(f.name)){msg(mid,'Đang nhận dạng chữ (OCR) từ ảnh…');return ocrDoc([f],mid,'ảnh','ảnh scan')}
+  if(ext==='pdf')return readPdf(buf,mid);
+  let err=null;
+  try{const r=readSheet(buf);if(r.rows.length)return r}catch(e){err=e}
+  msg(mid,'Excel không có bảng chữ hợp lệ – đang tìm ảnh scan bên trong để nhận dạng (OCR)…');
+  let sc=null;try{sc=await ocrXlsxImages(buf,mid)}catch(e){err=e}
+  if(sc)return sc;
+  throw err||new Error('File không có dòng dữ liệu cuộn thép hợp lệ và không chứa ảnh scan để nhận dạng.');
+}
+function fillInfo(m,replace){
+  const s=(id,v)=>{if(v||replace)$(id).value=v||''};
+  s('iSup',m.supplier);s('iCert',m.cert);s('iPO',m.contract);s('iSpec',m.spec);s('iDate',m.date);
+}
+$('f2').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{
+    msg('m2','Đang đọc '+f.name+'…');
+    const r=await parseFile(f,'m2');let add=false;
+    if(mtc.length)add=!confirm('Bảng 2 đã có '+mtc.length+' cuộn.\nOK = thay thế bằng dữ liệu mới\nHủy = thêm vào cuối bảng');
+    mtc=add?mtc.concat(r.rows):r.rows;fillInfo(r.meta,!add);renderMTC();recalc();
+    const tk=r.rows.filter(x=>x.ys!=='').length;
+    msg('m2','Đã nhập '+r.rows.length+' cuộn từ '+f.name+r.note+'. '+(tk?tk+' cuộn có kết quả thử kéo.':'File không có kết quả thử kéo.')+' Hãy rà soát lại số liệu trước khi sử dụng.','ok');
+  }catch(err){msg('m2','Lỗi: '+err.message,'err')}
+};
+$('f3').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{
+    msg('m3','Đang đọc '+f.name+'…');
+    const r=await parseFile(f,'m3');
+    if(r.rows.length>10&&!confirm('File có '+r.rows.length+' cuộn. Bạn có chắc muốn đưa tất cả vào danh sách mẫu kiểm tra?'))return msg('m3','Đã hủy nhập.');
+    r.rows.forEach(o=>act.push(rowFrom(o)));renderAct();
+    msg('m3','Đã nhập '+r.rows.length+' cuộn từ '+f.name+r.note+'. Hãy nhập độ dày và khổ thực tế.','ok');
+  }catch(err){msg('m3','Lỗi: '+err.message,'err')}
+};
+
+/* ---------- Bảng 2 ---------- */
+function headMTC(){
+  $('h2').innerHTML=`<tr><th colspan="7" class="g">Thông tin cuộn thép</th><th colspan="6" class="g">Thử kéo</th><th colspan="17" class="g">Thành phần hóa học (%)</th><th rowspan="2"></th></tr><tr class="h2">`+
+   MC.map(c=>`<th>${c[1]}${c[2]?'<br>'+c[2]:''}</th>`).join('')+'<th>CEV</th></tr>';
+}
+function renderMTC(){
+  const q=$('q2').value.trim().toLowerCase();
+  $('b2').innerHTML=mtc.map((r,i)=>({r,i})).filter(({r})=>!q||(r.coil+' '+r.heat).toLowerCase().includes(q)).map(({r,i})=>
+    '<tr>'+MC.map(c=>`<td><input class="c ${c[3]||''}" data-t="2" data-i="${i}" data-k="${c[0]}" value="${esc(r[c[0]])}"></td>`).join('')+
+    `<td id="cev${i}">${cev(r)}</td><td><button class="x2" title="Xóa dòng" onclick="mtc.splice(${i},1);renderMTC();recalc()">✕</button></td></tr>`).join('');
+  $('coilList').innerHTML=mtc.map(r=>`<option value="${esc(r.coil)}">`).join('');
+  $('kCoils').textContent=mtc.length;
+}
+function addMTC(){mtc.push({coil:'MỚI-'+Date.now().toString().slice(-5)});renderMTC()}
+function loadSample(){
+  const base={width:1230,len:'C',heat:'356427',dir:'L',ypt:'2',bend:'OK',C:.05,Si:.02,Mn:.29,P:.009,S:.011,Al:.037,N:.0028,spec:'JIS G 3131 SPHC'};
+  mtc=[{...base,coil:'3203582000',thick:2.58,wt:24260,ys:272,ts:354,el:48.1},{...base,coil:'3203583000',thick:2.58,wt:24565,ys:262,ts:360,el:37.8}];
+  fillInfo({supplier:'Formosa Hà Tĩnh Steel Corporation',cert:'QZA026900638',contract:'6H72157049',spec:'JIS G 3131 SPHC',date:'2026/09/16'},true);
+  renderMTC();recalc();msg('m2','Đã nạp 2 cuộn mẫu lấy từ chứng chỉ PDF (QZA026900638).','ok');
+}
+
+/* ---------- Bảng 3: biên bản theo mẫu QĐ04-QA ---------- */
+const LK=['C','Si','Mn','P','S','ys','ts','el'];
+let ck={};
+const tolT=()=>num($('tolThick').value)??0,tolW=()=>num($('tolW').value)??0;
+const gradeOf=m=>String(m.spec||'').trim().split(/\s+/).pop()||'';
+const qcOf=m=>(m.thick!==''&&m.thick!=null&&m.width!==''&&m.width!=null)?m.thick+' x '+m.width:'';
+function rowFrom(m){return{coil:m.coil,grade:gradeOf(m),qc:qcOf(m),tons:m.wt!==''&&m.wt!=null?+(m.wt/1000).toFixed(3):'',C:m.C,Si:m.Si,Mn:m.Mn,P:m.P,S:m.S,ys:m.ys,ts:m.ts,el:m.el,thick:'',tol:'',width:''}}
+function parseQC(a){const m=String(a.qc||'').match(/([\d.,]+)\s*[x×*]\s*([\d.,]+)/);return m?{t:num(m[1].replace(',','.')),w:num(m[2])}:{t:null,w:null}}
+/* Dung sai theo chữ số có nghĩa đầu tiên của giá trị MTC: 0.1x → ±0.1 ; 0.0x → ±0.02 ; 0.00x → ±0.005 ; 0.000x → ±0.0005 */
+function chemTol(v){v=Math.abs(v);return v>=0.1-1e-12?0.1:v>=0.01-1e-12?0.02:v>=0.001-1e-12?0.005:0.0005}
+function evalRow(a){
+  const o={},q=parseQC(a),t=num(a.thick),w=num(a.width);
+  if(t!=null&&q.t!=null)o.thick=Math.abs(t-q.t)<=(num(a.tol)??tolT())+1e-9;      // chỉ để tô màu
+  if(w!=null&&q.w!=null)o.width=Math.abs(w-q.w)<=tolW()+1e-9;
+  const coil=String(a.coil??'').trim();
+  if(!coil)return{o,s:'Chưa nhập số cuộn',c:'warn'};
+  const m=mtc.find(r=>String(r.coil).trim()===coil);
+  o.coil=!!m;
+  if(!m)return{o,s:'Số cuộn không khớp',c:'bad'};
+  let bad=0,miss=0;
+  for(const k of ['C','Si','Mn','P','S']){
+    const x=num(a[k]),y=num(m[k]);
+    if(x==null||y==null){miss++;continue}
+    o[k]=Math.abs(x-y)<=chemTol(y)+1e-9;if(!o[k])bad++;
+  }
+  return{o,s:bad?'Không đạt':miss?'Chưa đủ dữ liệu':'Đạt',c:bad?'bad':miss?'warn':'ok'};
+}
+function headAct(){
+  $('h3').innerHTML=`<tr><th rowspan="2">STT</th><th colspan="4" class="g">Mô tả sản phẩm</th><th rowspan="2"></th><th colspan="5" class="g">Thành phần hóa học (%), MAX</th><th colspan="3" class="g">Cơ tính, L0 = 50 mm</th><th rowspan="2">Độ dày<br>thực tế<br>mm</th><th rowspan="2">Dung sai<br>độ dày*<br>mm</th><th rowspan="2">Khổ<br>thực tế<br>mm</th><th rowspan="2"></th></tr>
+  <tr><th>Số cuộn</th><th>Mã số</th><th>Quy cách<br>mm</th><th>Khối lượng<br>tấn</th><th>C</th><th>Si</th><th>Mn</th><th>P</th><th>S</th><th>YS<br>MPa</th><th>TS<br>MPa</th><th>EL<br>%</th></tr>`;
+}
+function renderAct(){
+  const inp=(i,k,c='')=>`<td><input class="c ${c}" data-t="3" data-i="${i}" data-k="${k}" value="${esc(act[i][k])}"></td>`;
+  $('b3').innerHTML=act.map((a,i)=>`<tr data-i="${i}"><td>${i+1}</td><td><input class="c w" list="coilList" data-t="3" data-i="${i}" data-k="coil" value="${esc(a.coil)}"></td>${inp(i,'grade')}${inp(i,'qc','w')}${inp(i,'tons')}<td></td>`+
+   LK.map(k=>inp(i,k)).join('')+inp(i,'thick')+`<td><input class="c" placeholder="±${tolT()}" data-t="3" data-i="${i}" data-k="tol" value="${esc(a.tol)}"></td>`+inp(i,'width')+
+   `<td><button class="x2" title="Xóa dòng" onclick="act.splice(${i},1);renderAct()">✕</button></td></tr>`).join('');
+  recalc();
+}
+function addAct(){act.push({coil:''});renderAct()}
+function rand3(){
+  if(mtc.length<1)return msg('m3','Hãy nhập dữ liệu bảng 2 trước khi chọn mẫu ngẫu nhiên.','err');
+  [...mtc].sort(()=>Math.random()-.5).slice(0,3).forEach(m=>act.push(rowFrom(m)));renderAct();
+  msg('m3','Đã chọn ngẫu nhiên '+Math.min(3,mtc.length)+' cuộn từ bảng 2 và điền sẵn dữ liệu MTC. Hãy nhập độ dày và khổ thực tế.','ok');
+}
+/* ---------- Danh mục yêu cầu QĐ04-QA ---------- */
+const CK=[
+ ['4.1 Yêu cầu về ngoại quan'],
+ ['a1','Ngoại quan tổng thể bên ngoài cuộn: không bị móp méo nặng, không bị rỉ sét nặng, không nhiễm nước biển gây hư hại bề mặt ảnh hưởng đến việc sử dụng.'],
+ ['a2','Mép biên: không bị các lỗi móp méo nặng, nứt mép, răng cưa mép, chồng mép,…; mép biên không được dính sơn.'],
+ ['a3','Bề mặt: không có lỗ, vết nứt gãy và tạp chất phi kim loại.'],
+ ['a4','Bề mặt: không có các khuyết tật như gấp mặt, dấu trục cán, vết xước, vảy, rỗ mặt nặng, cặn tích tụ,… làm ảnh hưởng đến bề mặt khi sử dụng; các khuyết tật nhẹ cần được loại bỏ trong quá trình cán nguội.'],
+ ['a5','Đảm bảo yêu cầu về độ phẳng, độ cong cạnh, dung sai… theo TCCS14: Tiêu chuẩn cơ sở Thép lá cán nóng tẩy rỉ và bôi dầu.'],
+ ['4.2 Yêu cầu về cơ tính'],
+ ['b1','Nhà cung cấp mới: lấy mẫu tối thiểu 3% số cuộn để kiểm tra và xem kết quả từ MTC của nhà cung cấp.','new'],
+ ['b2','Nhà cung cấp cũ, chất lượng ổn định: xem kết quả từ MTC; có thể cắt mẫu kiểm tra ngẫu nhiên 1–2 cuộn nguyên liệu HRC, hoặc theo yêu cầu từ cấp trên.','old'],
+ ['b3','Kết quả đạt theo tiêu chuẩn của grade thép tương ứng hoặc theo tiêu chuẩn thỏa thuận giữa công ty và nhà cung cấp.'],
+ ['4.3 Quy định thành phần hóa học'],
+ ['c1','Nhà cung cấp mới: lấy mẫu tối thiểu 3% để kiểm tra và xem kết quả từ MTC của nhà cung cấp.','new'],
+ ['c2','Nhà cung cấp cũ, chất lượng ổn định: xem kết quả từ MTC nhà cung cấp; có thể cắt mẫu kiểm tra ngẫu nhiên 1–2 cuộn nguyên liệu HRC, hoặc theo yêu cầu từ cấp trên.','old'],
+ ['c3','Kết quả phải đạt theo tiêu chuẩn của grade thép tương ứng hoặc theo tiêu chuẩn thỏa thuận giữa công ty và nhà cung cấp.']];
+const ckItems=()=>CK.filter(x=>x.length>1&&(!x[2]||x[2]===$('iSupType').value));
+function renderCk(){
+  const ty=$('iSupType').value;
+  $('ckList').innerHTML=CK.filter(x=>x.length===1||!x[2]||x[2]===ty).map(x=>x.length===1?`<div class="ckg">${x[0]}</div>`:
+   `<div class="ckr"><span>${x[1]}${x[0]==='b1'||x[0]==='c1'?'<br><small class="msg ckh" style="display:inline-block;margin:4px 0 0"></small>':''}</span>
+    <label><input type="checkbox" data-t="K" data-id="${x[0]}" data-v="ok" ${ck[x[0]]==='ok'?'checked':''}>Đạt</label>
+    <label><input type="checkbox" data-t="K" data-id="${x[0]}" data-v="ng" ${ck[x[0]]==='ng'?'checked':''}>Không đạt</label></div>`).join('');
+  recalc();
+}
+function recalc(){
+  const n={ok:0,warn:0,bad:0};
+  document.querySelectorAll('#b3 tr').forEach(tr=>{
+    const r=evalRow(act[tr.dataset.i]);n[r.c]++;
+    tr.querySelectorAll('input.c').forEach(e=>{const v=r.o[e.dataset.k];e.classList.toggle('okc',v===true);e.classList.toggle('ngc',v===false)});
+  });
+  const tot=act.length,pct=tot?Math.round(n.ok/tot*100):0,it=ckItems();
+  const ckBad=it.filter(x=>ck[x[0]]==='ng').length,ckMiss=it.filter(x=>!ck[x[0]]).length;
+  const need=Math.ceil(mtc.length*0.03);
+  document.querySelectorAll('.ckh').forEach(h1=>h1.textContent=`3% của ${mtc.length} cuộn = tối thiểu ${need} cuộn; hiện đã lấy mẫu ${tot} cuộn (${tot>=need&&mtc.length?'đủ':'chưa đủ'}).`);
+  $('kSamp').textContent=tot;$('kMatch').textContent=tot?pct+'%':'—';
+  const [txt,cl]=(n.bad||ckBad)?['Cần xem xét','bad']:!tot?['Chờ dữ liệu','info']:(n.warn||ckMiss)?['Cần bổ sung','warn']:['Sẵn sàng','ok'];
+  $('kStat').innerHTML=`<span class="tg ${cl}">${txt}</span>`;
+  const parts=[];
+  if(n.bad)parts.push(`${n.bad}/${tot} cuộn không đạt`);if(ckBad)parts.push(`${ckBad} yêu cầu QĐ04-QA không đạt`);
+  if(n.warn)parts.push(`${n.warn} cuộn chưa đủ dữ liệu`);if(ckMiss)parts.push(`${ckMiss} yêu cầu QĐ04-QA chưa đánh giá`);
+}
+document.addEventListener('input',e=>{
+  const t=e.target,d=t.dataset;if(!d||!d.t)return;
+  const only=(sel)=>t.closest(sel).querySelectorAll('input[type=checkbox]').forEach(x=>{if(x!==t)x.checked=false});
+  if(d.t==='K'){ck[d.id]=t.checked?d.v:'';document.querySelectorAll('input[data-t=K][data-id="'+d.id+'"]').forEach(x=>x.checked=x.dataset.v===ck[d.id]);return recalc()}
+  const arr=d.t==='2'?mtc:act;arr[d.i][d.k]=t.value;
+  if(d.t==='2'){const c=$('cev'+d.i);if(c)c.textContent=cev(mtc[d.i]);if(d.k==='coil')renderCoilList()}
+  recalc();
+});
+document.addEventListener('change',e=>{
+  const t=e.target,d=t.dataset;if(!d||d.t!=='3'||d.k!=='coil')return;
+  const m=mtc.find(r=>String(r.coil)===t.value.trim());if(!m)return;
+  const n=rowFrom(m),a=act[d.i];['thick','tol','width'].forEach(k=>n[k]=a[k]??'');act[d.i]=n;renderAct();
+});
+const renderCoilList=()=>$('coilList').innerHTML=mtc.map(r=>`<option value="${esc(r.coil)}">`).join('');
+function clr(t){if(!confirm('Xóa toàn bộ dữ liệu bảng '+t+'?'))return;if(t===2){mtc=[];renderMTC();fillInfo({},true)}else act=[];renderAct()}
+
+/* ---------- Tải xuống Excel ---------- */
+function dl(t){
+  const wb=XLSX.utils.book_new();
+  if(t===2){
+    const H=MC.map(c=>c[1]+(c[2]?' ('+c[2]+')':'')).concat('CEV');
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([H,...mtc.map(r=>MC.map(c=>r[c[0]]??'').concat(cev(r)))]),'Bảng 2 - MTC');
+  }else{
+    const H=['STT','Số cuộn','Mã số','Quy cách (mm)','Khối lượng (tấn)','','C','Si','Mn','P','S','YS (MPa)','TS (MPa)','EL (%)','Độ dày thực tế (mm)','Dung sai độ dày (mm)','Khổ thực tế (mm)'];
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([H,...act.map((a,i)=>[i+1,a.coil,a.grade,a.qc,a.tons,'',...LK.map(k=>a[k]??''),a.thick??'',a.tol||tolT(),a.width??''])]),'Bảng 3 - Biên bản');
+  }
+  XLSX.writeFile(wb,t===2?'Bang2_MTC.xlsx':'Bang3_Thuc_te.xlsx');
+}
+
+/* ---------- Báo cáo ---------- */
+const LOGO='data:image/jpeg;base64,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';
+function renderReport(){
+  const v=id=>esc($(id).value||'—');
+  const tw=mtc.reduce((s,r)=>s+(num(r.wt)||0),0),heats=new Set(mtc.map(r=>r.heat).filter(Boolean)).size;
+  const rs=act.map(evalRow),ok=rs.filter(r=>r.c==='ok').length,bad=rs.filter(r=>r.c==='bad').length;
+  const col=(a,r,k)=>`<td class="${r.o[k]===true?'ok':r.o[k]===false?'bad':''}">${esc(a[k])||''}</td>`;
+  const sym=s=>`${s==='ok'?'☑':'☐'} Đạt &nbsp; ${s==='ng'?'☒':'☐'} Không đạt`;
+  const ty=$('iSupType').value==='new'?'Nhà cung cấp mới':'Nhà cung cấp cũ, chất lượng ổn định';
+  $('report').innerHTML=`
+  <img src="${LOGO}" alt="Tôn Nam Kim" style="display:block;width:100%;max-width:560px;margin:0 auto 14px">
+  <h1 style="margin-bottom:14px">BIÊN BẢN KIỂM TRA NGUYÊN LIỆU HRC ĐẦU VÀO</h1>
+  <h3>I. Thông tin chứng chỉ &amp; lô hàng</h3>
+  <div class="kv"><div><b>Nhà cung cấp:</b> ${v('iSup')}</div><div><b>Số chứng chỉ:</b> ${v('iCert')}</div><div><b>Số hợp đồng / PO:</b> ${v('iPO')}</div>
+  <div><b>Mác thép / tiêu chuẩn:</b> ${v('iSpec')}</div><div><b>Ngày cấp:</b> ${v('iDate')}</div><div><b>Số lô nhập:</b> ${v('iLot')}</div></div>
+  <h3>II. Tổng hợp</h3>
+  <div class="kv"><div><b>Số cuộn trong MTC:</b> ${mtc.length}</div><div><b>Tổng khối lượng MTC:</b> ${tw.toLocaleString('vi-VN')} kg</div>
+  <div><b>Số cuộn lấy mẫu:</b> ${act.length}</div><div><b>Cuộn đạt:</b> ${ok}/${act.length}</div><div><b>Cuộn không đạt:</b> ${bad}</div></div>
+  <h3>III. Kết quả kiểm tra từng cuộn</h3>
+  <table><thead><tr><th rowspan="2">STT</th><th colspan="4">Mô tả sản phẩm</th><th rowspan="2"></th><th colspan="5">Thành phần hóa học (%), MAX</th><th colspan="3">Cơ tính, L0 = 50 mm</th><th rowspan="2">Độ dày<br>thực tế (mm)</th><th rowspan="2">Dung sai<br>độ dày* (mm)</th><th rowspan="2">Khổ<br>thực tế (mm)</th></tr>
+  <tr><th>Số cuộn</th><th>Mã số</th><th>Quy cách (mm)</th><th>KL (tấn)</th><th>C</th><th>Si</th><th>Mn</th><th>P</th><th>S</th><th>YS</th><th>TS</th><th>EL</th></tr></thead><tbody>`+
+  (act.length?act.map((a,i)=>{const r=rs[i];return `<tr><td>${i+1}</td><td>${esc(a.coil)}</td><td>${esc(a.grade)}</td><td>${esc(a.qc)}</td><td>${esc(a.tons)}</td><td></td>${LK.map(k=>col(a,r,k)).join('')}${col(a,r,'thick')}<td>±${esc(a.tol)||tolT()}</td>${col(a,r,'width')}</tr>`}).join(''):'<tr><td colspan="18">Chưa có dữ liệu.</td></tr>')+
+  `</tbody></table>
+  <p style="font-size:11px;color:#5c6b78">(*) Được quy định theo tiêu chuẩn sản phẩm hoặc TDS thỏa thuận giữa Nam Kim và nhà cung cấp. Dung sai khổ: ±${$('tolW').value} mm. Cuộn đạt = khớp số cuộn với bảng 2 và C, Si, Mn, P, S lệch không quá ±0,1 / ±0,02 / ±0,005 / ±0,0005 (theo chữ số có nghĩa đầu tiên của giá trị MTC).</p>
+  <h3>IV. Đánh giá theo yêu cầu QĐ04-QA</h3>
+  <table style="text-align:left"><tbody>`+CK.filter(x=>x.length===1||!x[2]||x[2]===$('iSupType').value).map(x=>x.length===1?`<tr><td colspan="2" style="text-align:left;background:#dde5ea"><b>${x[0]}</b></td></tr>`:`<tr class="ckr2"><td style="text-align:left;white-space:normal">${x[1]}</td><td style="width:220px;white-space:nowrap"><label><input type="checkbox" data-t="K" data-id="${x[0]}" data-v="ok" ${ck[x[0]]==='ok'?'checked':''}> Đạt</label> &nbsp; <label><input type="checkbox" data-t="K" data-id="${x[0]}" data-v="ng" ${ck[x[0]]==='ng'?'checked':''}> Không đạt</label></td></tr>`).join('')+`</tbody></table>
+  <h3>V. Kết luận &amp; phê duyệt</h3>
+  <div class="kv"><div><b>Người kiểm tra:</b> ${v('iQC')}</div><div><b>Ngày kiểm tra:</b> ${v('iQDate')}</div><div><b>Phòng thử / thiết bị:</b> ${v('iEq')}</div>
+  <div><b>Phương pháp lấy mẫu:</b> ${v('iSamp')}</div><div><b>Quyết định:</b> <strong>${v('iDec')}</strong></div></div>
+  <div style="border:1px solid #c9d1d8;min-height:70px;padding:6px 8px;font-size:12px;white-space:pre-wrap;margin-top:8px"><b>Kết luận của QC:</b> ${esc($('iConc').value)}</div>
+  <p style="font-size:12px"><b>Ghi chú:</b> ${esc($('iNote').value)||'—'}</p>
+  <div class="sign"><div><b>Người kiểm tra</b><br><i>(Ký, ghi rõ họ tên)</i></div><div><b>Trưởng bộ phận QC</b><br><i>(Ký, ghi rõ họ tên)</i></div><div><b>Phê duyệt</b><br><i>(Ký, ghi rõ họ tên)</i></div></div>`;
+}
+function exportPDF(){renderReport();const t=document.title;document.title='Bao_cao_IQC_'+($('iCert').value||'HRC');window.print();document.title=t}
+window.addEventListener('beforeprint',renderReport);
+/* ===== Lưu phiếu & Dashboard ===== */
+const RK='hrc_iqc_records_v1',IDS=['iSup','iCert','iPO','iSpec','iDate','iLot','iQC','iQDate','iEq','iSamp','iDec','iNote','iConc','iSupType','tolThick','tolW'];
+const DEF={iSamp:'Ngẫu nhiên 3 cuộn',iDec:'Chờ quyết định',iSupType:'new',tolThick:'0.05',tolW:'2'};
+let curId=null,memRecs=[];
+const loadRecs=()=>{try{return JSON.parse(localStorage.getItem(RK)||'[]')}catch(e){return memRecs}};
+const storeRecs=L=>{memRecs=L;try{localStorage.setItem(RK,JSON.stringify(L));return true}catch(e){return false}};
+function toast(t,c){const e=$('toast');e.textContent=t;e.className='toast show '+(c||'');clearTimeout(toast.t);toast.t=setTimeout(()=>e.className='toast no-print',3800)}
+const go=t=>document.querySelector('.tab[data-t="'+t+'"]').click();
+function stats(){const rs=act.map(evalRow),n=c=>rs.filter(r=>r.c===c).length;
+  return{coils:mtc.length,kg:mtc.reduce((s,r)=>s+(num(r.wt)||0),0),samples:act.length,ok:n('ok'),bad:n('bad'),warn:n('warn')}}
+function saveRec(){
+  if(!mtc.length&&!act.length&&!$('iCert').value)return toast('Chưa có dữ liệu để lưu.','err');
+  const info={};IDS.forEach(i=>info[i]=$(i).value);
+  const r={id:curId||'R'+Date.now(),savedAt:new Date().toISOString(),info,mtc,act,ck,stats:stats()};
+  const L=loadRecs(),i=L.findIndex(x=>x.id===r.id);if(i>=0)L[i]=r;else L.unshift(r);
+  const ok=storeRecs(L);curId=r.id;renderDash();
+  if(!ok)return toast('Chưa ghi được vào bộ nhớ trình duyệt (bị chặn hoặc hết dung lượng) – phiếu chỉ tồn tại trong phiên này. Hãy dùng “Sao lưu (JSON)”.','err');
+  toast('Đã lưu phiếu '+(info.iCert||'')+' lúc '+new Date().toLocaleTimeString('vi-VN'),'ok');
+}
+function openRec(id){
+  const r=loadRecs().find(x=>x.id===id);if(!r)return;
+  IDS.forEach(i=>{if(i in r.info)$(i).value=r.info[i]});mtc=r.mtc||[];act=r.act||[];ck=r.ck||{};curId=r.id;
+  renderMTC();renderCk();renderAct();renderReport();go('p1');toast('Đã mở phiếu '+(r.info.iCert||''),'ok');
+}
+function newRec(jump){
+  if((mtc.length||act.length)&&!confirm('Bắt đầu phiếu mới? Dữ liệu chưa lưu của phiếu hiện tại sẽ mất.'))return;
+  IDS.forEach(i=>$(i).value=DEF[i]??'');$('iLot').value='';mtc=[];act=[];ck={};curId=null;
+  renderMTC();renderCk();renderAct();renderReport();if(jump)go('p1');
+}
+function delRec(id){if(!confirm('Xóa phiếu này khỏi dashboard?'))return;storeRecs(loadRecs().filter(r=>r.id!==id));if(curId===id)curId=null;renderDash()}
+const pct=r=>r.stats.samples?Math.round(r.stats.ok/r.stats.samples*100):null;
+const DEC=['Chấp nhận','Giữ lại xem xét','Từ chối','Chờ quyết định'],DCL=['ok','warn','bad','info'],DCO=['var(--ok)','var(--warn)','var(--bad)','#8fa1ad'];
+const decOf=r=>DEC.includes(r.info.iDec)?r.info.iDec:'Chờ quyết định';
+function renderDash(){
+  const L=loadRecs(),S=L.reduce((a,r)=>({n:a.n+1,c:a.c+r.stats.coils,kg:a.kg+r.stats.kg,s:a.s+r.stats.samples,ok:a.ok+r.stats.ok}),{n:0,c:0,kg:0,s:0,ok:0});
+  const cnt=DEC.map(d=>L.filter(r=>decOf(r)===d).length);
+  $('dK').innerHTML=[[S.n,'Phiếu đã lưu'],[S.c.toLocaleString('vi-VN'),'Cuộn theo chứng chỉ'],[(S.kg/1000).toLocaleString('vi-VN',{maximumFractionDigits:1})+' tấn','Tổng khối lượng'],[S.s?Math.round(S.ok/S.s*100)+'%':'—','Tỷ lệ cuộn đạt (tổng)'],[cnt[3],'Phiếu chờ quyết định']].map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('');
+  $('dDec').innerHTML=(L.length?`<div class="stk">${cnt.map((n,i)=>n?`<i style="flex:${n};background:${DCO[i]}" title="${DEC[i]}: ${n}"></i>`:'').join('')}</div>`:'<p class="msg">Chưa có phiếu nào được lưu. Vào “Kiểm tra &amp; đối chiếu” và bấm “Lưu lại”.</p>')+`<div class="lg">${DEC.map((d,i)=>`<span><u style="background:${DCO[i]}"></u>${d}: <b>${cnt[i]}</b></span>`).join('')}</div>`;
+  $('dRecent').innerHTML=L.slice(0,10).map(r=>{const p=pct(r);return `<div class="hb"><span title="${esc(r.info.iSup)}">${esc(r.info.iCert||'(chưa có số)')}</span><div><i style="width:${p||0}%;background:${p==null?'#cfd6dc':p>=100?'var(--ok)':p>=50?'var(--warn)':'var(--bad)'}"></i></div><b>${p==null?'—':p+'%'}</b></div>`}).join('')||'<p class="msg">Chưa có dữ liệu.</p>';
+  const G={};L.forEach(r=>{const k=r.info.iSup||'(chưa rõ)',g=G[k]||(G[k]={n:0,c:0,s:0,ok:0,rej:0});g.n++;g.c+=r.stats.coils;g.s+=r.stats.samples;g.ok+=r.stats.ok;if(decOf(r)==='Từ chối')g.rej++});
+  $('dSup').innerHTML=Object.entries(G).map(([k,g])=>`<tr><td style="text-align:left">${esc(k)}</td><td>${g.n}</td><td>${g.c.toLocaleString('vi-VN')}</td><td>${g.s}</td><td>${g.s?Math.round(g.ok/g.s*100)+'%':'—'}</td><td>${g.rej}</td></tr>`).join('')||'<tr><td colspan="6">Chưa có dữ liệu.</td></tr>';
+  const q=($('dQ').value||'').toLowerCase(),f=$('dF').value;
+  const R=L.filter(r=>(!f||decOf(r)===f)&&(!q||[r.info.iSup,r.info.iCert,r.info.iPO,r.info.iSpec].join(' ').toLowerCase().includes(q)));
+  $('dList').innerHTML=R.map(r=>{const p=pct(r),d=decOf(r),i=r.info;
+    return `<tr class="${r.id===curId?'cur':''}"><td>${new Date(r.savedAt).toLocaleString('vi-VN')}</td><td style="text-align:left">${esc(i.iSup)}</td><td>${esc(i.iCert)}</td><td>${esc(i.iSpec)}</td><td>${r.stats.coils}</td><td>${r.stats.samples}</td><td>${p==null?'—':`<span class="tg ${p>=100?'ok':p>=50?'warn':'bad'}">${p}%</span>`}</td><td><span class="tg ${DCL[DEC.indexOf(d)]}">${d}</span></td><td>${esc(i.iQC)}</td><td><button class="b sm" onclick="openRec('${r.id}')">Mở</button> <button class="b d sm" onclick="delRec('${r.id}')">Xóa</button></td></tr>`}).join('')||'<tr><td colspan="10">Chưa có phiếu phù hợp.</td></tr>';
+}
+function exportRecs(){
+  const L=loadRecs();if(!L.length)return toast('Chưa có phiếu nào để xuất.','err');
+  const H=['Ngày lưu','Nhà cung cấp','Số chứng chỉ','Số hợp đồng / PO','Mác thép / tiêu chuẩn','Ngày cấp','Số lô nhập','Số cuộn MTC','Khối lượng (kg)','Cuộn lấy mẫu','Cuộn đạt','Cuộn không đạt','Chưa đủ dữ liệu','Tỷ lệ đạt (%)','Quyết định','Người kiểm tra','Ngày kiểm tra','Kết luận QC'];
+  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([H,...L.map(r=>{const i=r.info,s=r.stats;return [new Date(r.savedAt).toLocaleString('vi-VN'),i.iSup,i.iCert,i.iPO,i.iSpec,i.iDate,i.iLot,s.coils,s.kg,s.samples,s.ok,s.bad,s.warn,pct(r)??'',decOf(r),i.iQC,i.iQDate,i.iConc]})]),'Danh sách phiếu');
+  XLSX.writeFile(wb,'Danh_sach_phieu_IQC.xlsx');
+}
+function backup(){
+  const L=loadRecs();if(!L.length)return toast('Chưa có phiếu nào để sao lưu.','err');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(L)],{type:'application/json'}));a.download='Sao_luu_phieu_IQC_'+new Date().toISOString().slice(0,10)+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+}
+$('fRest').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{const A=JSON.parse(await f.text());if(!Array.isArray(A)||A.some(r=>!r.id||!r.info||!r.stats))throw 0;
+    const L=loadRecs(),M=new Map(L.map(r=>[r.id,r]));A.forEach(r=>M.set(r.id,r));
+    const out=[...M.values()].sort((a,b)=>b.savedAt.localeCompare(a.savedAt));storeRecs(out);renderDash();toast('Đã khôi phục '+A.length+' phiếu.','ok');
+  }catch(err){toast('File sao lưu không hợp lệ.','err')}
+};
+headMTC();headAct();renderMTC();renderCk();renderAct();renderReport();renderDash();
+</script>
+</body>
+</html>

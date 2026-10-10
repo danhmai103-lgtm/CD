@@ -244,6 +244,80 @@ tr.cur td{background:#e8f3f6}.sm{padding:4px 9px!important;font-size:12px!import
 <script>
 const $=id=>document.getElementById(id);
 const CHEM=['C','Si','Mn','P','S','Al','N','Cu','Ni','Cr','B','Mo','V','Ti','Sn','Nb'];
+/* ===== Tiêu chuẩn thành phần hóa học HRC (max hoặc [min,max]) ===== */
+const HRC_STD={
+  SPHC:{C:0.12,Mn:0.60,P:0.045,S:0.035,std:'JIS G 3131'},
+  SPHD:{C:0.10,Mn:0.45,P:0.035,S:0.035,std:'JIS G 3131'},
+  SPHE:{C:0.08,Mn:0.40,P:0.030,S:0.030,std:'JIS G 3131'},
+  SPHF:{C:0.08,Mn:0.35,P:0.025,S:0.025,std:'JIS G 3131'},
+  SS330:{P:0.050,S:0.050,std:'JIS G 3101'},
+  SS400:{P:0.050,S:0.050,std:'JIS G 3101'},
+  SS490:{P:0.050,S:0.050,std:'JIS G 3101'},
+  SS540:{C:0.30,Mn:1.60,P:0.040,S:0.040,std:'JIS G 3101'},
+  DD11:{C:0.12,Mn:0.60,P:0.045,S:0.045,std:'EN 10111'},
+  DD12:{C:0.10,Mn:0.45,P:0.035,S:0.035,std:'EN 10111'},
+  DD13:{C:0.08,Mn:0.40,P:0.030,S:0.030,std:'EN 10111'},
+  DD14:{C:0.08,Mn:0.35,P:0.025,S:0.025,std:'EN 10111'},
+  S235JR:{C:0.17,Mn:1.40,P:0.035,S:0.035,N:0.012,Cu:0.55,std:'EN 10025-2'},
+  S235J0:{C:0.17,Mn:1.40,P:0.030,S:0.030,N:0.012,Cu:0.55,std:'EN 10025-2'},
+  S235J2:{C:0.17,Mn:1.40,P:0.025,S:0.025,Cu:0.55,std:'EN 10025-2'},
+  S275JR:{C:0.21,Mn:1.50,P:0.035,S:0.035,N:0.012,Cu:0.55,std:'EN 10025-2'},
+  S275J0:{C:0.18,Mn:1.50,P:0.030,S:0.030,N:0.012,Cu:0.55,std:'EN 10025-2'},
+  S275J2:{C:0.18,Mn:1.50,P:0.025,S:0.025,Cu:0.55,std:'EN 10025-2'},
+  S355JR:{C:0.24,Si:0.55,Mn:1.60,P:0.035,S:0.035,N:0.012,Cu:0.55,std:'EN 10025-2'},
+  S355J0:{C:0.20,Si:0.55,Mn:1.60,P:0.030,S:0.030,N:0.012,Cu:0.55,std:'EN 10025-2'},
+  S355J2:{C:0.20,Si:0.55,Mn:1.60,P:0.025,S:0.025,Cu:0.55,std:'EN 10025-2'},
+  S355K2:{C:0.20,Si:0.55,Mn:1.60,P:0.025,S:0.025,Cu:0.55,std:'EN 10025-2'},
+  S460JR:{C:0.20,Si:0.55,Mn:1.70,P:0.030,S:0.030,N:0.025,Cu:0.55,std:'EN 10025-2'},
+  S460J0:{C:0.20,Si:0.55,Mn:1.70,P:0.030,S:0.030,N:0.025,Cu:0.55,std:'EN 10025-2'},
+  S460J2:{C:0.20,Si:0.55,Mn:1.70,P:0.030,S:0.030,N:0.025,Cu:0.55,std:'EN 10025-2'},
+  S460K2:{C:0.20,Si:0.55,Mn:1.70,P:0.030,S:0.030,N:0.025,Cu:0.55,std:'EN 10025-2'},
+  S500J0:{C:0.20,Si:0.55,Mn:1.70,P:0.030,S:0.030,N:0.025,Cu:0.55,std:'EN 10025-2'},
+  E295:{P:0.045,S:0.045,N:0.012,std:'EN 10025-2'},
+  E335:{P:0.045,S:0.045,N:0.012,std:'EN 10025-2'},
+  E360:{P:0.045,S:0.045,N:0.012,std:'EN 10025-2'},
+  'CS Type A':{C:0.10,Mn:0.60,P:0.030,S:0.035,Cu:0.20,Ni:0.20,Cr:0.15,Mo:0.06,std:'ASTM A1011'},
+  'CS Type B':{C:[0.02,0.15],Mn:0.60,P:0.030,S:0.035,Cu:0.20,Ni:0.20,Cr:0.15,Mo:0.06,std:'ASTM A1011'},
+  'CS Type C':{C:0.08,Mn:0.60,P:0.100,S:0.035,Cu:0.20,Ni:0.20,Cr:0.15,Mo:0.06,std:'ASTM A1011'},
+  'CS Type D':{C:0.10,Mn:0.70,P:0.030,S:0.035,Cu:0.20,Ni:0.20,Cr:0.15,Mo:0.06,std:'ASTM A1011'},
+  'DS Type A':{C:0.08,Mn:0.50,P:0.020,S:0.030,Cu:0.20,Ni:0.20,Cr:0.15,Mo:0.06,std:'ASTM A1011'},
+  'DS Type B':{C:[0.02,0.08],Mn:0.50,P:0.020,S:0.030,Cu:0.20,Ni:0.20,Cr:0.15,Mo:0.06,std:'ASTM A1011'},
+  '1002':{C:[0.02,0.04],Mn:0.35,P:0.030,S:0.035,std:'SAE J403'},
+  '1004':{C:[0.02,0.08],Mn:0.35,P:0.030,S:0.035,std:'SAE J403'},
+  '1005':{C:0.06,Mn:0.35,P:0.030,S:0.035,std:'SAE J403'},
+  '1006':{C:0.08,Mn:0.45,P:0.030,S:0.035,std:'SAE J403'},
+  '1008':{C:0.10,Mn:0.50,P:0.030,S:0.035,std:'SAE J403'},
+  '1010':{C:[0.08,0.13],Mn:[0.30,0.60],P:0.030,S:0.035,std:'SAE J403'},
+  '1012':{C:[0.10,0.15],Mn:[0.30,0.60],P:0.030,S:0.035,std:'SAE J403'},
+  '1015':{C:[0.13,0.18],Mn:[0.30,0.60],P:0.030,S:0.035,std:'SAE J403'},
+  '1018':{C:[0.15,0.20],Mn:[0.60,0.90],P:0.030,S:0.035,std:'SAE J403'},
+  '1020':{C:[0.18,0.23],Mn:[0.30,0.60],P:0.030,S:0.035,std:'SAE J403'},
+  '1025':{C:[0.22,0.28],Mn:[0.30,0.60],P:0.030,S:0.035,std:'SAE J403'},
+  '1045':{C:[0.43,0.50],Mn:[0.60,0.90],P:0.030,S:0.035,std:'SAE J403'},
+  'SAE 1006':{C:0.08,Mn:0.45,P:0.030,S:0.035,std:'SAE J403'},
+  'SAE 1008':{C:0.10,Mn:0.50,P:0.030,S:0.035,std:'SAE J403'},
+  'SAE1006':{C:0.08,Mn:0.45,P:0.030,S:0.035,std:'SAE J403'},
+  'SAE1008':{C:0.10,Mn:0.50,P:0.030,S:0.035,std:'SAE J403'}
+};
+function stdLimits(specStr){
+  const s=String(specStr||'').toUpperCase().replace(/\s+/g,' ').trim();
+  if(!s)return null;
+  const keys=Object.keys(HRC_STD).sort((a,b)=>b.length-a.length);
+  for(const k of keys){
+    const ku=k.toUpperCase();
+    if(s===ku||s.endsWith(' '+ku)||s.includes(' '+ku+' ')||s.includes(ku)||new RegExp('\\b'+ku.replace(/[.*+?^${}()|[\]\\]/g,'\\$&').replace(/\s+/g,'\\s*')+'\\b').test(s))return HRC_STD[k];
+  }
+  const sae=s.match(/\b(10\d{2})\b/);
+  if(sae&&HRC_STD[sae[1]])return HRC_STD[sae[1]];
+  return null;
+}
+function chemOutOfSpec(elem,val,limits){
+  if(limits==null||val==null||val==='')return null;
+  const v=num(val);if(v==null)return null;
+  const lim=limits[elem];if(lim==null)return null;
+  if(Array.isArray(lim))return v<lim[0]-1e-9||v>lim[1]+1e-9;
+  return v>lim+1e-9;
+}
 const MC=[['coil','Số cuộn','','w'],['thick','Dày','mm'],['width','Rộng','mm'],['len','Dài','mm'],['wt','Khối lượng','kg'],['heat','Số mẻ'],['spec','Tiêu chuẩn','','x'],
  ['dir','Hướng'],['ypt','YPT'],['ys','YS','MPa'],['ts','TS','MPa'],['el','EL','%'],['bend','Uốn'],...CHEM.map(c=>[c,c])];
 let mtc=[],act=[];
@@ -264,7 +338,7 @@ document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{
 
 /* ---------- Phân tích file ---------- */
 const ALIAS={
-  coil:['coilno','coil','coilnumber','coil no','coilno.','nocoil','no.coil','socuon','so cuon','số cuộn','sốcuộn','cuon','macuon','mã cuộn','socuonthep','coilid','socoil','coil id','so coil','số coil','coil number','so cuon thep','stt cuon','ma so cuon'],
+  coil:['coilno','coil','coilnumber','coil no','coilno.','nocoil','no.coil','socuon','so cuon','số cuộn','sốcuộn','cuon','macuon','mã cuộn','socuonthep','coilid','socoil','coil id','so coil','số coil','coil number','so cuon thep','stt cuon','ma so cuon','rollsteel','roll steel','rollsteelno','packno','pack no','钢卷号','捆包号'],
   thick:['thickness','thick','day','doday','độdày','doday','thicknessmm','dày','daymm','do day','độ dày'],
   width:['width','rong','chieurong','chiềurộng','rộng','widthmm','khổ','kho','chieu rong','chiều rộng'],
   len:['length','dai','chiềudài','chieudai','dài','chieu dai'],
@@ -295,37 +369,72 @@ function matchAlias(n, keys){
 function isCoilLike(v){
   const s=String(v??'').trim().replace(/[\s\-_/./]/g,'');
   if(!s)return false;
-  // 5–14 chữ số, hoặc 1–4 chữ cái + 5+ số (phổ biến ở các nhà máy thép)
-  return /^\d{5,14}$/.test(s) || /^[A-Za-z]{1,4}\d{5,14}$/.test(s);
+  // 5–14 chữ số, hoặc 1–4 chữ cái + 5+ số (H3D…, H107…, IA0…)
+  return /^\d{5,14}$/.test(s) || /^[A-Za-z]{1,4}\d{5,14}$/.test(s) || /^H3[DE]\d{8,10}$/i.test(s);
 }
 /* ===== Đọc Excel: hỗ trợ tiêu đề nhiều dòng (song ngữ), hệ số ×100/×1.000/×10.000, mã cuộn dạng chữ+số ===== */
-const FIELD={coil:['socuon','coilno','coilnumber','macuon','productno','卷号','钢卷号','卷筒号','带钢号','捲號','鋼捲號','제품번호','코일번호'],thick:['thickness','doday','厚度','두께'],width:['width','dorong','chieurong','宽度','寬度','폭'],len:['length','chieudai','长度','長度'],
+const FIELD={coil:['socuon','coilno','coilnumber','macuon','productno','rollsteel','rollsteelno','packno','packno.','钢卷号','卷号','卷筒号','带钢号','捆包号','捲號','鋼捲號','제품번호','코일번호'],thick:['thickness','doday','厚度','두께'],width:['width','dorong','chieurong','宽度','寬度','폭'],len:['length','chieudai','长度','長度'],
   wt:['netweight','khoiluong','weight','净重','淨重','重量','중량'],heat:['heatno','heat','mesonau','炉号','炉批号','爐號','熔炼号','제강번호'],ys:['yield','gioihanchay','屈服','항복'],ts:['tensile','gioihanben','抗拉','抗张','인장강도'],el:['elongation','dogiandai','giandai','延伸','伸长','伸長','연신'],
   bend:['bending','thuuon','弯曲','彎曲','굴곡'],dir:['direction','huong']};
 const EXACT={ys:['ys','yp','rp02'],ts:['ts','uts','rm'],el:['el','a50'],spec:['specification','spec','grade','tieuchuan','mac','macthep','牌号','钢种','鋼種','제품규격'],dir:['dir']};
-const DEFSC={C:100,Si:100,Mn:100,S:1000,P:1000,Cu:1000,Ni:1000,Cr:1000,Mo:1000,V:10000,Ti:10000,Al:10000,B:10000};
+const DEFSC={C:100,Si:100,Mn:100,S:1000,P:1000,Cu:1000,Ni:1000,Cr:1000,Mo:1000,V:10000,Ti:10000,Al:10000,B:10000,Nb:10000,N:10000};
+/* Parse hệ số cột: "x100", "× 1.000", "x10^{-2}", "x10^-3", "x 10^{-4}" → số chia */
+function parseScaleToken(s){
+  s=String(s??'').trim().replace(/\s+/g,'');
+  if(!s)return null;
+  let m=/^[x×]\s*([\d.,]+)$/i.exec(s);
+  if(m){const n=+m[1].replace(/[.,]/g,'');return(!isNaN(n)&&n>0)?n:null}
+  /* x10^{-2} | x10^-2 | ×10⁻² | x10^−3 | 10^{-2} */
+  m=/^[x×]?\s*10\s*(?:\^|⁻|−|-)?\s*[-−]?\s*(\d+)\s*$/i.exec(s);
+  if(m)return Math.pow(10,+m[1]);
+  m=/10\s*(?:\^|⁻|−|-)\s*[-−]?\s*(\d+)/i.exec(s);
+  if(m)return Math.pow(10,+m[1]);
+  return null;
+}
+const isSpecRow=r=>{
+  const t=norm((r||[]).join(' '));
+  return /guifanfanwei|specification|min\s*max|规范范围|规范|范围|minmax|min\.?\s*max/.test(t)
+    || ((r||[]).some(c=>/^min$/i.test(String(c).trim())) && (r||[]).some(c=>/^max$/i.test(String(c).trim())));
+};
 const cellStr=v=>v instanceof Date?v.toLocaleDateString('vi-VN'):String(v??'').trim();
 function parseGrid(rows,opts){
   opts=opts||{};
   rows=rows.map(r=>(r||[]).map(cellStr));
   const ncol=Math.max(0,...rows.slice(0,400).map(r=>r.length));
-  /* 1. cột SỐ CUỘN = cột có nhiều ô khớp dạng mã cuộn nhất */
+  /* 1. cột SỐ CUỘN = cột có nhiều ô khớp dạng mã cuộn nhất (bỏ qua dòng SPECIFICATION) */
   let coilCol=-1,best=0;
-  for(let j=0;j<ncol;j++){let n=0;for(const r of rows)if(isCoilLike(r[j]))n++;if(n>best){best=n;coilCol=j}}
+  for(let j=0;j<ncol;j++){let n=0;for(const r of rows){if(isSpecRow(r))continue;if(isCoilLike(r[j]))n++}if(n>best){best=n;coilCol=j}}
   if(opts.pos){coilCol=opts.pos.coil;best=Math.max(best,1)}
   if(coilCol<0||best<1)return null;
-  const first=rows.findIndex(r=>isCoilLike(r[coilCol]));
+  const first=rows.findIndex(r=>!isSpecRow(r)&&isCoilLike(r[coilCol]));
   if(first<0)return null;
   /* 2. vùng tiêu đề: từ dòng chứa "STT" (nếu có) đến dòng dữ liệu đầu tiên */
   let hs=-1;
-  for(let i=first-1;i>=Math.max(0,first-10);i--)if(rows[i].some(c=>norm(c)==='stt')){hs=i;break}
-  if(hs<0)hs=Math.max(0,first-6);
+  for(let i=first-1;i>=Math.max(0,first-12);i--)if(rows[i].some(c=>norm(c)==='stt'||/rollsteel|steelno|packno|钢卷号|卷号/.test(norm(c)))){hs=i;break}
+  if(hs<0)hs=Math.max(0,first-8);
   const hdr=rows.slice(hs,first);
-  /* 3. hệ số (x 100, x 1.000, x 10.000) – điền tiếp sang các cột bên phải */
+  /* 3. hệ số (x100, x10^{-2}, ×10.000…) – lan sang cột trống bên phải */
   const scale=[];
-  hdr.forEach(r=>{let cur=null;for(let j=0;j<ncol;j++){const m=/^[x×]\s*([\d.,]+)$/i.exec(r[j]||'');if(m){cur=+m[1].replace(/[.,]/g,'');if(!isNaN(cur)&&cur>0)scale[j]=cur;else cur=null}else if(cur&&!r[j]&&scale[j]==null&&hdr.some(q=>/^[x×]/i.test(q[j]||'')===false)&&false)scale[j]=cur}
-    let c=null;for(let j=0;j<ncol;j++){if(/^[x×]\s*[\d.,]+$/i.test(r[j]||'')){c=scale[j]}else if(c&&scale[j]==null&&!(r[j]))scale[j]=c;else if(r[j])c=null}});
-  const isUnit=c=>/^[x×]\s*[\d.,]+$/i.test(c||'');
+  hdr.forEach(r=>{
+    let cur=null;
+    for(let j=0;j<ncol;j++){
+      const sc=parseScaleToken(r[j]);
+      if(sc){cur=sc;scale[j]=sc}
+      else if(cur&&!r[j]&&scale[j]==null)scale[j]=cur;
+      else if(r[j]&&!parseScaleToken(r[j]))cur=null;
+    }
+  });
+  /* Cũng quét cả ô tiêu đề kiểu "C % x10^{-2}" hoặc "C x100" */
+  for(let j=0;j<ncol;j++){
+    if(scale[j])continue;
+    for(const r of hdr){
+      const cell=String(r[j]||'');
+      const sc=parseScaleToken(cell)||parseScaleToken((cell.match(/[x×]\s*10\s*(?:\^|⁻|−|-)?\s*[-−]?\s*\d+/i)||[])[0])
+        ||parseScaleToken((cell.match(/[x×]\s*[\d.,]+/i)||[])[0]);
+      if(sc){scale[j]=sc;break}
+    }
+  }
+  const isUnit=c=>!!parseScaleToken(c)||/^[x×]\s*[\d.,]+$/i.test(c||'')||/10\s*(?:\^|⁻|−|-)\s*[-−]?\s*\d+/i.test(c||'');
   const all=[],last=[];
   for(let j=0;j<ncol;j++){const cs=hdr.map(r=>r[j]).filter(c=>c&&!isUnit(c));all[j]=norm(cs.join(' '));last[j]=norm(cs[cs.length-1]||'')}
   const map={coil:coilCol};
@@ -336,34 +445,50 @@ function parseGrid(rows,opts){
     if(done)continue;
     for(const k in EXACT)if(!(k in map)&&EXACT[k].includes(last[j])){map[k]=j;done=true;break}
     if(done)continue;
-    const c=CHEM.find(x=>x.toLowerCase()===last[j]||(last[j]==='sai'&&x==='Al'));if(c&&!(c in map))map[c]=j;
+    const c=CHEM.find(x=>x.toLowerCase()===last[j]||(last[j]==='sai'&&x==='Al')||(last[j]==='alt'&&x==='Al'));if(c&&!(c in map))map[c]=j;
   }
   if(opts.pos)Object.assign(map,opts.pos);
-  /* 4. thông tin đầu chứng chỉ */
-  const meta={},top=rows.slice(0,hs);let grade='',std='',total='';
+  /* 4. thông tin đầu chứng chỉ (Anh / Việt / Trung) */
+  const meta={},top=rows.slice(0,Math.max(hs,first));let grade='',std='',total='';
   for(const r of top)for(let j=0;j<r.length;j++){
-    const lb=norm(r[j]);if(!lb)continue;
+    const raw=String(r[j]||''),lb=norm(raw);if(!lb)continue;
     let v='';for(let k=j+1;k<r.length;k++)if(r[k]){v=r[k].replace(/^[:\s]+/,'');break}
-    if(!v&&r[j].includes(':'))v=r[j].split(':').slice(1).join(':').trim();
+    if(!v&&raw.includes(':'))v=raw.split(':').slice(1).join(':').trim();
+    if(!v&&raw.includes('：'))v=raw.split('：').slice(1).join('：').trim();
     if(!v)continue;
-    if(/^sono/.test(lb))meta.cert=meta.cert||v;
-    else if(/^ngaydate/.test(lb))meta.date=meta.date||v;
-    else if(/^macthep|^grade/.test(lb))grade=grade||v;
-    else if(/^tieuchuan|^standard/.test(lb))std=std||v;
-    else if(/^hopdong|^contract/.test(lb))meta.contract=meta.contract||v;
-    else if(lb==='mill'||/^nhamay/.test(lb))meta.supplier=meta.supplier||v;
-    else if(/^tongsocuon|^totalcoils/.test(lb))total=total||v;
+    if(/^sono|^millsheet|^质保书号|^证书号|^证书编号/.test(lb))meta.cert=meta.cert||v;
+    else if(/^ngaydate|^dateofissue|^发货日期|^签发日期|^出具日期/.test(lb))meta.date=meta.date||v;
+    else if(/^macthep|^grade|^steelgrade|^牌号|^钢种|^级别代号/.test(lb))grade=grade||v;
+    else if(/^tieuchuan|^standard|^执行标准|^标准/.test(lb))std=std||v;
+    else if(/^hopdong|^contract|^合同号|^订单号|^po\b/.test(lb))meta.contract=meta.contract||v;
+    else if(lb==='mill'||/^nhamay|^supplier|^consignee|^订货单位|^生产单位|^制造商/.test(lb))meta.supplier=meta.supplier||v;
+    else if(/^tongsocuon|^totalcoils|^总卷数/.test(lb))total=total||v;
+    else if(/^product|^产品名称|^品名/.test(lb)&&!meta.product)meta.product=v;
   }
-  meta.spec=(std+' '+grade).trim();
-  /* 5. dữ liệu */
+  /* Quét thêm cả dòng ghép (PDF text hay Excel gộp ô) */
+  const topText=top.map(r=>r.join(' ')).join('\n');
+  const grab=(re)=>{const m=topText.match(re);return m?m[1].trim():''};
+  if(!meta.cert)meta.cert=grab(/(?:MILL\s*SHEET\s*NO\.?|质保书号|证书号|证书编号)\s*[:：]?\s*([\w\-\/]{5,})/i);
+  if(!meta.date)meta.date=grab(/(?:DATE\s*OF\s*ISSUE|发货日期|签发日期)\s*[:：]?\s*([\d年月日\-\/\.YYMMDD\s]{6,20})/i);
+  if(!meta.contract)meta.contract=grab(/(?:CONTRACT\s*NO\.?|合同号)\s*[:：]?\s*([\w\-\/]{5,})/i);
+  if(!grade)grade=grab(/(?:STEEL\s*GRADE|牌号|级别代号)\s*[:：]?\s*([A-Z0-9\-]{2,12})/i);
+  if(!std)std=grab(/(?:STANDARD|执行标准)\s*[:：]?\s*([A-Z0-9\s\.\-]{4,30})/i);
+  if(!meta.supplier){
+    meta.supplier=grab(/(?:CONSIGNEE|订货单位)\s*[:：]?\s*([^\n]{8,80})/i)
+      ||grab(/(?:Rizhao\s+Baohua|Baohua\s+New\s+Materials|日照宝华)[^\n]{0,40}/i)
+      ||grab(/([A-Za-z\u4e00-\u9fff][A-Za-z0-9\u4e00-\u9fff\s,\.&]{10,60}(?:Co\.?,?\s*Ltd\.?|有限公司))/i);
+  }
+  meta.spec=(std+' '+grade).trim()||meta.spec||'';
+  /* 5. dữ liệu – bỏ qua dòng 规范范围 / SPECIFICATION / min-max */
   const out=[];
   for(const r of rows.slice(first)){
+    if(isSpecRow(r))continue;
     if(!isCoilLike(r[coilCol]))continue;
     const o={};for(const k in map)o[k]=r[map[k]];
     o.coil=String(r[coilCol]).replace(/[\s\-_/.]/g,'').toUpperCase();
     ['thick','width','wt','ys','ts','el'].forEach(k=>{if(k in o)o[k]=fix(o[k])});
     if('len' in o)o.len=num(o.len)==null?String(o.len||''):fix(o.len);
-    CHEM.forEach(c=>{if(c in map){const v=num(o[c]);const s=opts.defScale?DEFSC[c]:scale[map[c]];o[c]=v==null?'':+(s?v/s:v).toPrecision(6)}});
+    CHEM.forEach(c=>{if(c in map){const v=num(o[c]);const s=opts.defScale?DEFSC[c]:(scale[map[c]]||null);o[c]=v==null?'':+(s?v/s:v).toPrecision(6)}});
     o.heat=String(o.heat??'').trim();o.spec=String(o.spec??meta.spec).trim()||meta.spec;
     out.push(o);
   }
@@ -372,7 +497,7 @@ function parseGrid(rows,opts){
   const tn=parseInt(String(total).replace(/\D/g,''));
   if(tn)note+=tn===out.length?' · khớp tổng số cuộn ghi trên chứng chỉ ('+tn+')':' · ⚠ chứng chỉ ghi '+tn+' cuộn nhưng đọc được '+out.length+' – hãy kiểm tra';
   const sc=CHEM.filter(c=>c in map&&scale[map[c]]).length;
-  if(sc)note+=' · đã quy đổi hóa học theo hệ số ×100/×1.000/×10.000';
+  if(sc)note+=' · đã quy đổi hóa học theo hệ số ×100 / ×10⁻² / ×1.000 / ×10.000';
   return {rows:out,meta,note};
 }
 function readSheet(buf){
@@ -395,15 +520,22 @@ function parseItems(items,tol){
   let exp=[2,2,2,3,3,3,4];
   const first=toks.findIndex(t=>/^\d{6,}$/.test(String(t[0]).replace(/\D/g,''))&&t.length>=12);
   for(let i=0;i<(first<0?toks.length:first);i++){const t=toks[i];if(t.length===7&&t.every(x=>/^[2-5]$/.test(x))){exp=t.map(Number);break}}
+  /* Nếu text có giá trị chem thập phân (0.0xx) thì không chia hệ số */
+  const hasDecimalChem=/\b0\.\d{2,4}\b/.test(text)&&!/[x×]\s*10/i.test(text);
   const rows=[];
   for(const t of toks){
     const c0=String(t[0]||'').replace(/[\s\-_/./]/g,'');
-    // chấp nhận số cuộn 6+ chữ số (thường 8–12), dòng có ít nhất vài cột số
-    if(!/^\d{6,14}$/.test(c0)||t.length<6)continue;
+    // chấp nhận số cuộn 6+ chữ số HOẶC chữ+số (H3D…, H107…)
+    if((!/^\d{6,14}$/.test(c0)&&!/^[A-Za-z]{1,4}\d{5,14}$/.test(c0))||t.length<6)continue;
+    if(/规范|SPECIFICATION/i.test(t.join(' ')))continue;
     const [coilRaw,thick,width,len,wt,heat,dir,ypt,ys,ts,el,bend,...rest]=t;
     const coil=String(coilRaw).replace(/[\s\-_/./]/g,'');
     const o={coil,thick:fix(thick),width:fix(width),len,wt:fix(wt),heat:heat||'',dir:dir||'',ypt:ypt||'',ys:fix(ys),ts:fix(ts),el:fix(el),bend:bend||''};
-    ['C','Si','Mn','P','S','Al','N'].forEach((c,i)=>{const v=num(rest[i]);o[c]=v==null?'':+(v/Math.pow(10,exp[i]||2)).toPrecision(6)});
+    ['C','Si','Mn','P','S','Al','N'].forEach((c,i)=>{
+      const v=num(rest[i]);
+      if(v==null){o[c]='';return}
+      o[c]=hasDecimalChem?+v.toPrecision(6):+(v/Math.pow(10,exp[i]||2)).toPrecision(6);
+    });
     rows.push(o);
   }
   // fallback: quét toàn bộ text tìm các số giống coil
@@ -420,13 +552,17 @@ function parseItems(items,tol){
     }
   }
   const g=re=>(text.match(re)||[])[1]||'';
-  const spec=(text.match(/\b(?:JIS|ASTM|SAE|EN)\s+[A-Z]?\s?\d{3,5}(?::\d{4})?\s+[A-Z0-9]+/)||[''])[0];
-  rows.forEach(r=>r.spec=spec);
-  return {rows,meta:{contract:g(/CONTRACT NO.?\s+(\w+)/i)||g(/HỢP ĐỒNG[:\s]+(\w+)/i)||g(/PO[:\s#]+(\w+)/i),
-    cert:g(/CERTIFICATE NO.?\s+(\w+)/i)||g(/SỐ CHỨNG CHỈ[:\s]+(\w+)/i),
-    date:g(/ISSUE DATE\s+([\d\/\-]+)/i)||g(/NGÀY CẤP[:\s]+([\d\/\-]+)/i),
+  const spec=(text.match(/\b(?:JIS|ASTM|SAE|EN)\s+[A-Z0-9\s\-.:]{3,30}/)||[''])[0].trim();
+  rows.forEach(r=>{if(!r.spec)r.spec=spec});
+  return {rows,meta:{
+    contract:g(/CONTRACT\s*NO\.?\s*[:：]?\s*([\w\-\/]+)/i)||g(/HỢP ĐỒNG[:\s]+(\w+)/i)||g(/PO[:\s#]+([\w\-\/]+)/i)||g(/合同号\s*[:：]?\s*([\w\-\/]+)/i),
+    cert:g(/(?:CERTIFICATE|MILL\s*SHEET|TC)\s*NO\.?\s*[:：]?\s*([\w\-\/]+)/i)||g(/SỐ CHỨNG CHỈ[:\s]+(\w+)/i)||g(/质保书号\s*[:：]?\s*([\w\-]+)/i),
+    date:g(/(?:ISSUE\s*)?DATE\s*[:：]?\s*([\d\/\-\.年月日YYMM\s]{6,20})/i)||g(/NGÀY CẤP[:\s]+([\d\/\-]+)/i)||g(/发货日期\s*[:：]?\s*([\d年月日YYMM\s]{6,20})/i),
     spec,
-    supplier:/FORMOSA HA TINH STEEL/i.test(text)?'Formosa Hà Tĩnh Steel Corporation':(/NAM KIM/i.test(text)?'Tôn Nam Kim':''),
+    supplier:/FORMOSA HA TINH STEEL/i.test(text)?'Formosa Hà Tĩnh Steel Corporation'
+      :(/JSW\s+Vijayanagar|JSW\s+STEEL/i.test(text)?'JSW Vijayanagar Metallics Limited'
+      :(/宝华|Baohua/i.test(text)?'Rizhao Baohua New Materials Co., Ltd.'
+      :(/NAM KIM/i.test(text)?'Tôn Nam Kim':''))),
     note:''}};
 }
 /* ===== OCR cho file scan (PDF scan, Excel scan, ảnh chụp) ===== */
@@ -456,32 +592,132 @@ async function ocrSrc(src,mid,label,off){
   return (r.data.words||[]).filter(x=>x.text.trim()&&x.confidence>20).map(x=>({s:x.text.trim(),x:x.bbox.x0,y:-(x.bbox.y0+x.bbox.y1)/2-off*20000,h:x.bbox.y1-x.bbox.y0}));
 }
 const CHEM_SEQ=[['C',100],['Si',100],['Mn',100],['S',1000],['P',1000],['Cu',1000],['Ni',1000],['Cr',1000],['Mo',1000],['V',10000],['Ti',10000],['Al',10000],['B',10000],['Ca',10000],['Nb',10000],['CEV',100]];
-const COIL_RE=/^(?=.*[A-Za-z])[A-Za-z0-9]{2,4}\d{8,12}$/;
+const COIL_RE=/^(?=.*[A-Za-z])[A-Za-z0-9]{2,4}\d{8,12}$|^H3[DE]\d{8,10}$/i;
+/* Chuẩn hóa mã cuộn Baohua từ OCR: "H3D 26504833" / "H 3D 265049562" / "3D 26505192" → H3D26504833 */
+function normBaohuaCoil(s){
+  s=String(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(/^H3[DE]\d{8,10}$/.test(s))return s;
+  if(/^3[DE]\d{8,10}$/.test(s))return 'H'+s;
+  /* OCR tách: H3D + 26504833 */
+  const m=String(arguments[0]||'').toUpperCase().match(/H?\s*3\s*([DE])\s*(\d{8,10})/);
+  if(m)return 'H3'+m[1]+m[2];
+  return s;
+}
+/* Parse text OCR / raw của chứng chỉ Baohua (ROLL STEEL NO = số cuộn) */
+function parseBaohuaFromText(alltext){
+  if(!alltext||alltext.length<30)return null;
+  const SCALE={C:100,Si:100,Mn:100,P:1000,S:1000,Al:10000};
+  const CHEM_B=['C','Si','Mn','P','S','Al'];
+  const g=re=>(alltext.match(re)||[])[1]||'';
+  const meta={
+    supplier:/宝华|Baohua|Rizhao/i.test(alltext)?'Rizhao Baohua New Materials Co., Ltd.':'',
+    cert:g(/(?:MILL\s*SHEET\s*NO\.?|质保书号)\s*[:：]?\s*([\w\-]+)/i),
+    date:g(/(?:DATE\s*OF\s*ISSUE|发货日期)\s*[:：]?\s*([\d年月日YYMM\s\-]{6,24})/i),
+    contract:g(/(?:CONTRACT\s*NO\.?|合同号)\s*[:：]?\s*([\w\-]+)/i),
+    spec:''
+  };
+  const grade=g(/(?:STEEL\s*GRADE|牌号)\s*[:：]?\s*([A-Z0-9\-]+)/i);
+  const std=g(/(?:STANDARD|执行标准|JIS)\s*[:：]?\s*((?:JIS|ASTM|SAE|EN)?[A-Z0-9\s\-.:]{3,25})/i);
+  meta.spec=((std||'')+' '+(grade||'')).trim()||'JIS G 3131 SPHC';
+  const rows=[],seen=new Set();
+  /* Dòng dạng: H3D 26504833 E26404423 1.0*1,219 1 21.92 1 6 15 26 2 276 234 349 40.5 OK */
+  const lineRe=/H?\s*3\s*([DE])\s*(\d{8,10})[^\n\d]{0,12}(E?\s*\d{7,10})?[^\n\d]{0,25}(\d(?:[.,]\d)?)\s*[*xX×°]\s*1\s*[,.]?\s*219[^\n\d]{0,20}(\d+\.\d{1,3})/gi;
+  let m;
+  while((m=lineRe.exec(alltext))!==null){
+    const coil=('H3'+m[1]+m[2]).toUpperCase();
+    if(seen.has(coil))continue;seen.add(coil);
+    let heat=(m[3]||'').replace(/\s/g,'').toUpperCase();
+    if(heat&&!heat.startsWith('E'))heat='E'+heat.replace(/^\D+/,'');
+    const wt=+m[5].replace(',','.');
+    /* Lấy phần còn lại của dòng để lấy chem + YS TS EL */
+    const after=alltext.slice(m.index+m[0].length, m.index+m[0].length+120);
+    const nums=(after.match(/\d+\.?\d*/g)||[]).map(Number).filter(v=>!isNaN(v));
+    /* nums: C Si Mn P S Al YS TS EL … */
+    const o={coil,heat,thick:1.0,width:1219,len:'',wt:Math.round(wt*1000),spec:meta.spec,dir:'',ypt:'',ys:'',ts:'',el:'',bend:'OK'};
+    /* Bỏ qty nếu có (=1), lấy 6 số chem nhỏ rồi YS/TS/EL */
+    let ni=0;
+    if(nums[0]===1)ni=1;
+    CHEM_B.forEach((k,i)=>{
+      if(ni+i<nums.length){
+        const v=nums[ni+i];
+        if(v!=null)o[k]=+(v/SCALE[k]).toPrecision(6);
+      }
+    });
+    const rest=nums.slice(ni+6);
+    for(const v of rest){
+      if(o.ys===''&&v>=180&&v<=500){o.ys=v;continue}
+      if(o.ys!==''&&o.ts===''&&v>o.ys&&v<=800){o.ts=v;continue}
+      if(o.ts!==''&&o.el===''&&v>=15&&v<=60){o.el=v;break}
+    }
+    if(/OK|合格|Pass/i.test(after.slice(0,80)))o.bend='OK';
+    rows.push(o);
+  }
+  /* Fallback: chỉ lấy mã cuộn H3D/H3E */
+  if(!rows.length){
+    const coilRe=/H?\s*3\s*([DE])\s*(\d{8,10})/gi;
+    while((m=coilRe.exec(alltext))!==null){
+      const coil=('H3'+m[1]+m[2]).toUpperCase();
+      if(seen.has(coil))continue;seen.add(coil);
+      rows.push({coil,heat:'',thick:1,width:1219,len:'',wt:'',spec:meta.spec,dir:'',ypt:'',ys:'',ts:'',el:'',bend:'',C:'',Si:'',Mn:'',P:'',S:''});
+    }
+  }
+  if(!rows.length)return null;
+  return {rows,meta,note:' (Baohua ROLL STEEL NO = số cuộn; '+rows.length+' cuộn; hóa học ×100/×1000/×10000)'};
+}
 function parseOcr(items,note){
   const hs=items.map(i=>i.h||10).sort((a,b)=>a-b),tol=Math.max(6,(hs[hs.length>>1]||10)*.6);
   let meta={};try{meta=parseItems(items,tol).meta||{}}catch(e){}
   items=items.slice().sort((a,b)=>b.y-a.y);const lines=[];
   for(const it of items){const L=lines[lines.length-1];if(L&&Math.abs(L.y-it.y)<=tol)L.it.push(it);else lines.push({y:it.y,it:[it]})}
   const alltext=lines.map(L=>L.it.sort((a,b)=>a.x-b.x).map(i=>i.s).join(' ')).join('\n');
+  /* Baohua / ROLL STEEL NO: ưu tiên parser chuyên biệt */
+  if(/H\s*3\s*[DE]|ROLL\s*STEEL|宝华|Baohua|H3[DE]\d/i.test(alltext)){
+    const br=parseBaohuaFromText(alltext);
+    if(br&&br.rows.length)return {...br,note:(note||'')+(br.note||'')};
+  }
   const g=re=>(alltext.match(re)||[])[1]||'';
-  meta.cert=meta.cert||g(/S[oố]\/?\s*No\.?\s*[:.]?\s*([\w\-\/]{6,})/i);
-  meta.date=meta.date||g(/Date\s*[:.]?\s*(\d{1,2}\/\d{1,2}\/\d{4})/i);
-  const mg=g(/Grade\s*[:.]?\s*([A-Z]{2,4}\s?\d{3,5}\w*)/),sd=g(/Standard\s*[:.]?\s*([A-Z]{2,4}\s?[A-Z]?\d{2,5}(?::\d{4})?)/);
+  meta.cert=meta.cert||g(/(?:S[oố]\/?\s*No\.?|MILL\s*SHEET\s*NO\.?|质保书号|证书号|证书编号)\s*[:：.]?\s*([\w\-\/]{5,})/i);
+  meta.date=meta.date||g(/(?:Date\s*(?:of\s*Issue)?|发货日期|签发日期)\s*[:：.]?\s*([\d年月日\-\/\.YYMMDD\s]{6,22})/i);
+  meta.contract=meta.contract||g(/(?:CONTRACT\s*NO\.?|合同号|PO\s*No\.?)\s*[:：.]?\s*([\w\-\/]{5,})/i);
+  const mg=g(/(?:Grade|STEEL\s*GRADE|牌号|级别代号)\s*[:：.]?\s*([A-Z0-9\-]{2,12})/i);
+  const sd=g(/(?:Standard|执行标准)\s*[:：.]?\s*([A-Z0-9\s\.\-]{4,30})/i);
   if(!meta.spec&&(mg||sd))meta.spec=(sd+' '+mg).trim();
-  if(!meta.supplier){const m=g(/MILL\s*[:.]?\s*(.{8,70}?)\s*(?:ADD|\n|$)/);if(m)meta.supplier=m}
+  if(!meta.supplier){
+    meta.supplier=g(/(?:CONSIGNEE|订货单位)\s*[:：.]?\s*([^\n]{8,80})/i)
+      ||g(/(?:Rizhao\s+Baohua|Baohua\s+New\s+Materials|日照宝华|FORMOSA\s+HA\s*TINH)[^\n]{0,50}/i)
+      ||g(/MILL\s*[:.]?\s*(.{8,70}?)\s*(?:ADD|\n|$)/i)
+      ||g(/([A-Za-z\u4e00-\u9fff][A-Za-z0-9\u4e00-\u9fff\s,\.&]{10,60}(?:Co\.?,?\s*Ltd\.?|有限公司))/i);
+  }
   const total=parseInt(g(/Total\s*Coils\s*[:.]?\s*(\d{1,5})/i))||0;
-  const hasScale=/x\s*10[.,]?000|x\s*1[.,]000/i.test(alltext);
+  const hasScale=/x\s*10[.,]?000|x\s*1[.,]000|x\s*100|x10\s*[\^⁻−-]/i.test(alltext);
   const rows=[],seen=new Set();
   for(const L of lines){
-    const t=L.it.map(i=>fixTok(i.s));
-    let ci=t.findIndex(x=>/^\d{8,14}$/.test(x)||COIL_RE.test(x));if(ci<0)continue;
-    let coil=t[ci].toUpperCase();
+    const joined=L.it.map(i=>i.s).join(' ');
+    if(isSpecRow([joined]))continue; /* bỏ dòng 规范范围 / SPECIFICATION */
+    /* Ghép token OCR bị tách: "H3D" + "26504833" → H3D26504833 */
+    const rawToks=L.it.map(i=>i.s);
+    const merged=[];
+    for(let i=0;i<rawToks.length;i++){
+      const a=rawToks[i],b=rawToks[i+1]||'',c=rawToks[i+2]||'';
+      if(/^H?\s*3[DE]?$/i.test(a)&&/^\d{8,10}$/.test(b)){merged.push(normBaohuaCoil(a+b));i++;continue}
+      if(/^H$/i.test(a)&&/^3[DE]$/i.test(b)&&/^\d{8,10}$/.test(c)){merged.push(normBaohuaCoil(a+b+c));i+=2;continue}
+      if(/^H3[DE]$/i.test(a)&&/^\d{8,10}$/.test(b)){merged.push((a+b).toUpperCase());i++;continue}
+      merged.push(a);
+    }
+    const t=merged.map(x=>fixTok(x));
+    let ci=t.findIndex(x=>/^\d{8,14}$/.test(x)||COIL_RE.test(x)||/^[A-Z]{1,4}\d{6,12}$/i.test(x)||/^H3[DE]\d{8,10}$/i.test(x));
+    if(ci<0){
+      /* thử trên joined line */
+      const bm=joined.match(/H?\s*3\s*[DE]\s*\d{8,10}/i);
+      if(bm){t.unshift(normBaohuaCoil(bm[0]));ci=0}else continue;
+    }
+    let coil=normBaohuaCoil(t[ci]);
     if(/^[0-9][A-Z]\d{9}$/.test(coil))coil=({1:'I',0:'O',5:'S',8:'B',4:'A'}[coil[0]]||coil[0])+coil.slice(1);
     if(seen.has(coil))continue;seen.add(coil);
     const o={coil,thick:'',width:'',len:'',wt:'',heat:'',spec:meta.spec||'',dir:'',ypt:'',ys:'',ts:'',el:'',bend:''};
     const tail=[];
     for(const x of t.filter((_,i)=>i!==ci)){
-      if(/^(\d{5,7}|\d{2}[A-Za-z]\d{6})$/.test(x)&&!o.heat){o.heat=x;continue}
+      if(/^(\d{5,7}|\d{2}[A-Za-z]\d{6}|E\d{7,})$/.test(x)&&!o.heat){o.heat=x;continue}
       if(/^(đạt|dat|ok|pass)\.?$/i.test(x)){o.bend='OK';continue}
       if(/^[Cc]$/.test(x)&&!o.len){o.len='C';continue}
       const v=nv(x);if(v==null||x.length>9)continue;
@@ -642,20 +878,64 @@ async function ocrPage(cv,mid,label){
   return {rows:res.rows,meta:{...res.meta,...Object.fromEntries(Object.entries(meta).filter(([,v])=>v&&v!==0))},total:meta.total||0};
 }
 async function ocrDoc(srcs,mid,label,fb){
-  const rows=[],seen=new Set();let meta={},total=0,fbItems=[];
+  const rows=[],seen=new Set();let meta={},total=0,fbItems=[],fullText='';
   for(let i=0;i<srcs.length;i++){
     const cv=srcs[i] instanceof HTMLCanvasElement?srcs[i]:await bigCanvas(srcs[i]),lb=label+(srcs.length>1?' '+(i+1)+'/'+srcs.length:'');
-    const r=await ocrPage(cv,mid,lb);
-    if(r){r.rows.forEach(x=>{if(!seen.has(x.coil)){seen.add(x.coil);rows.push(x)}});meta={...meta,...Object.fromEntries(Object.entries(r.meta).filter(([,v])=>v))};total=total||r.total}
-    else fbItems.push(...await ocrSrc(cv,mid,lb,i));
+    /* 1) OCR toàn trang (tốt cho Baohua ROLL STEEL NO) */
+    try{
+      const w=await ocrWorker();
+      ocrLog=p=>msg(mid,'OCR '+lb+': '+Math.round(p*100)+'%…');
+      const rec=await w.recognize(cv);
+      const pageText=rec.data.text||'';
+      fullText+='\n'+pageText;
+      const br=parseBaohuaFromText(pageText);
+      if(br&&br.rows.length){
+        br.rows.forEach(x=>{if(!seen.has(x.coil)){seen.add(x.coil);rows.push(x)}});
+        Object.entries(br.meta||{}).forEach(([k,v])=>{if(v)meta[k]=v});
+      }
+      (rec.data.words||[]).filter(x=>x.text.trim()&&x.confidence>15)
+        .forEach(x=>fbItems.push({s:x.text.trim(),x:x.bbox.x0,y:-(x.bbox.y0+x.bbox.y1)/2-i*20000,h:x.bbox.y1-x.bbox.y0}));
+    }catch(e){console.warn('full OCR',e)}
+    /* 2) OCR theo lưới (nếu chưa đủ cuộn) */
+    if(rows.length<3){
+      try{
+        const r=await ocrPage(cv,mid,lb);
+        if(r){r.rows.forEach(x=>{if(!seen.has(x.coil)){seen.add(x.coil);rows.push(x)}});meta={...meta,...Object.fromEntries(Object.entries(r.meta||{}).filter(([,v])=>v))};total=total||r.total}
+      }catch(e){}
+    }
+  }
+  /* 3) Parse toàn bộ text OCR (gộp nhiều trang) */
+  if(rows.length<3&&fullText.length>50){
+    try{
+      const br=parseBaohuaFromText(fullText);
+      if(br&&br.rows.length){
+        br.rows.forEach(x=>{if(!seen.has(x.coil)){seen.add(x.coil);rows.push(x)}});
+        Object.entries(br.meta||{}).forEach(([k,v])=>{if(v)meta[k]=v});
+      }
+    }catch(e){}
   }
   if(rows.length){
     const unk=rows.filter(x=>/^CHUA\d{5}$/.test(x.coil)).length;
-    let n=(unk?' · '+unk+' cuộn chưa đọc được số cuộn (mã tạm CHUAxxxxx) – hãy nhập tay':'')+' ('+fb+', nhận dạng OCR theo từng cột – hãy đối chiếu với bản gốc; cột không đọc được để trống)';
-    if(total)n+=total===rows.length?' · khớp tổng số cuộn ghi trên chứng chỉ ('+total+')':' · chứng chỉ ghi '+total+' cuộn, đọc được '+rows.length+' – hãy kiểm tra các dòng thiếu';
+    let n=(unk?' · '+unk+' cuộn mã tạm CHUAxxxxx':'')+' ('+fb+' OCR – ROLL STEEL NO = số cuộn; hãy đối chiếu bản gốc)';
+    if(total)n+=total===rows.length?' · khớp '+total+' cuộn':' · chứng chỉ ghi '+total+', đọc được '+rows.length;
     return {rows,meta,note:n};
   }
-  return parseOcr(fbItems,' ('+fb+')');
+  try{
+    const raw=fbItems.map(i=>i.s||'').join(' ')+'\n'+fullText;
+    const r=parseBaohua(fbItems,raw)||parseBaohuaFromText(raw);
+    if(r&&r.rows.length)return r;
+  }catch(e){}
+  try{return parseOcr(fbItems,' ('+fb+')')}
+  catch(e){
+    const raw=(fbItems.map(i=>i.s||'').join(' ')+'\n'+fullText);
+    const coils=[...new Set((raw.match(/H\s*3\s*[DE]\s*\d{8,10}/gi)||[]).map(c=>normBaohuaCoil(c)))].filter(c=>/^H3[DE]\d{8,10}$/.test(c));
+    if(coils.length){
+      return {rows:coils.map(coil=>({coil,heat:'',thick:1,width:1219,len:'',wt:'',spec:'',dir:'',ypt:'',ys:'',ts:'',el:'',bend:'',C:'',Si:'',Mn:'',P:'',S:''})),
+        meta:{supplier:/Baohua|宝华/i.test(raw)?'Rizhao Baohua New Materials Co., Ltd.':''},
+        note:' (OCR chỉ đọc được ROLL STEEL NO / số cuộn – hãy nhập tay hóa học)'};
+    }
+    throw e;
+  }
 }
 async function pdfToCanvases(buf){
   const pdf=await pdfjsLib.getDocument({data:buf.slice(0)}).promise,out=[];
@@ -667,6 +947,184 @@ async function pdfToCanvases(buf){
   }
   return out;
 }
+/* ===== JSW Vijayanagar (EN 10204-3.1, SAE J403…): Heat + Coil No. + size "X" + chem thập phân ===== */
+function parseJSW(items,raw){
+  items=items.slice().sort((a,b)=>b.y-a.y);
+  const lines=[];
+  for(const it of items){const L=lines[lines.length-1];if(L&&Math.abs(L.y-it.y)<=5)L.it.push(it);else lines.push({y:it.y,it:[it]})}
+  const toks=lines.map(L=>L.it.sort((a,b)=>a.x-b.x).map(i=>i.s.trim()).join(' ').split(/\s+/).filter(Boolean));
+  const text=toks.map(t=>t.join(' ')).join('\n');
+  const g=re=>(text.match(re)||[])[1]||'';
+  const meta={
+    supplier:/JSW\s+Vijayanagar|JSW\s+STEEL/i.test(text)?'JSW Vijayanagar Metallics Limited':'',
+    cert:g(/TC\s*No\.?\s*([\w\-\/]+)/i)||g(/Certificate\s*No\.?\s*([\w\-\/]+)/i),
+    date:g(/Date\s*[:.]?\s*(\d{1,2}[.\-\/]\d{1,2}[.\-\/]\d{2,4})/i),
+    contract:g(/(?:PO|Order|Contract)\s*No\.?\s*[:.]?\s*([\w\-\/]+)/i),
+    spec:''
+  };
+  const grade=g(/Grade\s*[:.]?\s*([A-Z0-9]{2,8})/i);
+  const std=g(/Specification\s*[:.]?\s*((?:SAE|ASTM|JIS|EN)[A-Z0-9\s\-.:]+?)(?=\s+Grade|\s+MIN|\s*$)/i);
+  meta.spec=((std||'')+' '+(grade||'')).trim();
+  const CHEM_J=['C','Mn','S','P','Si','Al','Cr','Ni','Cu','Nb','Mo','V','Ti','B','N'];
+  const rows=[],seen=new Set();
+  for(const t of toks){
+    /* Heat: H107794 / I107763 ; Coil: 25309447 */
+    let hi=t.findIndex(x=>/^[HI]\d{5,8}$/i.test(x));
+    if(hi<0)continue;
+    const heat=t[hi].toUpperCase();
+    let coil='',ci=-1;
+    for(let j=hi+1;j<Math.min(hi+4,t.length);j++){
+      if(/^\d{7,10}$/.test(t[j])){coil=t[j];ci=j;break}
+    }
+    if(!coil||seen.has(coil))continue;
+    /* size: 2.000 X 1215.0 X Coil */
+    let thick='',width='',len='Coil';
+    const sz=t.join(' ').match(/(\d+(?:\.\d+)?)\s*[xX×]\s*(\d+(?:\.\d+)?)\s*[xX×]\s*(Coil|C|\d+)/i);
+    if(sz){thick=fix(sz[1]);width=fix(sz[2]);len=sz[3]}
+    /* Net Wt / Gross Wt (tấn) rồi bỏ cột Coils (=1), lấy chem thập phân */
+    let wt='',numsAfter=[],afterWt=false;
+    for(let j=(ci>=0?ci+1:hi+1);j<t.length;j++){
+      const v=num(t[j]);
+      if(v==null)continue;
+      if(!afterWt){
+        if(wt===''&&v>=5&&v<=40){wt=v;continue} /* Net Wt */
+        if(wt!==''&&v>=5&&v<=40)continue; /* Gross Wt */
+        if(wt!==''&&v===1&&Number.isInteger(v)){afterWt=true;continue} /* Coils */
+        if(v>0&&v<=2.5){/* thick đã bắt bằng regex, bỏ qua */}
+        continue;
+      }
+      if(v>=0&&v<=2.5)numsAfter.push(v);
+    }
+    /* fallback nếu không bắt được cờ Coils */
+    if(numsAfter.length<4){
+      numsAfter=[];
+      let gotWt=false;
+      for(let j=(ci>=0?ci+1:hi+1);j<t.length;j++){
+        const v=num(t[j]);if(v==null)continue;
+        if(!gotWt&&v>=5&&v<=40){wt=wt||v;gotWt=true;continue}
+        if(gotWt&&v>=5&&v<=40)continue;
+        if(gotWt&&v>=0&&v<=2.5)numsAfter.push(v);
+      }
+      /* bỏ số 1 đầu (Coils) nếu có */
+      if(numsAfter[0]===1)numsAfter.shift();
+    }
+    if(numsAfter.length<4)continue;
+    seen.add(coil);
+    const o={coil,heat,thick,width,len,wt:wt!==''?Math.round(wt*1000):'',spec:meta.spec,dir:'',ypt:'',ys:'',ts:'',el:'',bend:''};
+    CHEM_J.forEach((k,i)=>{if(i<numsAfter.length&&CHEM.includes(k))o[k]=+numsAfter[i].toPrecision(6)});
+    rows.push(o);
+  }
+  if(!rows.length)return null;
+  return {rows,meta,note:' (JSW Vijayanagar: Coil No. = mã số cuộn; hóa học thập phân sẵn, khối lượng tấn → kg)'};
+}
+
+/* ===== Baohua / 日照宝华 (JIS G 3131 SPHC) =====
+   PDF lưu text lệch cột + dính ô. Dùng regex trên mọi dạng raw (space / dính / từng item). */
+function parseBaohua(items,raw){
+  const parts=[];
+  if(raw)parts.push(String(raw));
+  if(items&&items.length){
+    parts.push(items.map(i=>i.s||'').join(' '));
+    parts.push(items.map(i=>i.s||'').join(''));
+    /* sắp xếp theo vị trí (y giảm, x tăng) rồi nối */
+    const sorted=items.slice().sort((a,b)=>(b.y-a.y)||(a.x-b.x));
+    parts.push(sorted.map(i=>i.s||'').join(' '));
+  }
+  const text=parts.join('\n');
+  if(!text||text.length<20)return null;
+
+  const g=re=>(text.match(re)||[])[1]||'';
+  const meta={
+    supplier:/宝华|Baohua|Rizhao\s*Baohua/i.test(text)?'Rizhao Baohua New Materials Co., Ltd.':'',
+    cert:g(/(?:MILL\s*SHEET\s*NO\.?|质保书号)\s*[:：]?\s*([\w\-]+)/i),
+    date:g(/(?:DATE\s*OF\s*ISSUE|发货日期)\s*[:：]?\s*([\d年月日YYMM\s\-]{6,24})/i),
+    contract:g(/(?:CONTRACT\s*NO\.?|合同号)\s*[:：]?\s*([\w\-]+)/i),
+    spec:''
+  };
+  const grade=g(/(?:STEEL\s*GRADE|牌号)\s*[:：]?\s*([A-Z0-9\-]+)/i);
+  const std=g(/(?:STANDARD|执行标准)\s*[:：]?\s*((?:JIS|ASTM|SAE|EN)[A-Z0-9\s\-.:]{3,30})/i);
+  meta.spec=((std||'')+' '+(grade||'')).trim();
+  const SCALE={C:100,Si:100,Mn:100,P:1000,S:1000,Al:10000};
+  const CHEM_B=['C','Si','Mn','P','S','Al'];
+
+  /* Tìm mọi cặp (weight, coil, heat) — nhiều biến thể dính/cách */
+  const coils=[];
+  const seen=new Set();
+  const add=(wt,coil,heat)=>{
+    coil=String(coil).toUpperCase().replace(/[^A-Z0-9]/g,'');
+    if(!/^H3[DE]\d{8,10}$/.test(coil)||seen.has(coil))return;
+    seen.add(coil);
+    coils.push({wt:+wt,coil,heat:heat?String(heat).toUpperCase():''});
+  };
+  const patterns=[
+    /(\d+\.\d{1,3})\s*1\s*1\.0\s*[*xX×]\s*1[,.]?\s*219\s*(H3[DE]\d{8,10})\s*(E\d{7,10})/gi,
+    /(\d+\.\d{1,3})\s+1\.0\s*[*xX×]\s*1[,.]?219\s+(H3[DE]\d{8,10})\s+(E\d{7,10})/gi,
+    /(\d+\.\d{1,3})1\.0[*xX×]1[,.]219(H3[DE]\d{8,10})(E\d{7,10})/gi,
+    /(\d+\.\d{1,3})\s*[^\d]{0,5}(H3[DE]\d{8,10})\s*(E\d{7,10})/gi
+  ];
+  for(const re of patterns){
+    let m; re.lastIndex=0;
+    while((m=re.exec(text))!==null)add(m[1],m[2],m[3]);
+  }
+  /* Cuối cùng: chỉ cần mã cuộn H3D/H3E */
+  if(!coils.length){
+    let m; const re=/H3[DE]\d{8,10}/gi;
+    while((m=re.exec(text))!==null){
+      const coil=m[0].toUpperCase();
+      if(seen.has(coil))continue;
+      const before=text.slice(Math.max(0,m.index-50),m.index);
+      const after=text.slice(m.index+coil.length,m.index+coil.length+20);
+      const wm=before.match(/(\d+\.\d{1,3})\s*\d?\s*$/);
+      const hm=after.match(/^\s*(E\d{7,10})/i);
+      add(wm?wm[1]:0,coil,hm?hm[1]:'');
+    }
+  }
+  if(!coils.length)return null;
+
+  /* Lấy dãy số thuần để ghép chem/cơ tính theo cột */
+  const numToks=[];
+  const spaceText=parts.filter(p=>/\s/.test(p)).join('\n')||text;
+  spaceText.split(/[\s\n\r]+/).forEach(t=>{
+    if(/^\d+\.?\d*$/.test(t))numToks.push(+t);
+  });
+  /* thêm số từ text dính: tách các số liên tiếp */
+  if(numToks.length<30){
+    const allNums=text.match(/\d+\.\d+|\d+/g)||[];
+    allNums.forEach(s=>{const v=+s;if(!isNaN(v))numToks.push(v)});
+  }
+
+  const n=coils.length;
+  /* Tìm khối bắt đầu 0,12 (min/max C) */
+  let data=numToks;
+  for(let i=0;i<data.length-8;i++){
+    if(data[i]===0&&data[i+1]===12&&data[i+2]===0&&(data[i+3]===60||data[i+3]===0)){
+      data=data.slice(i+8);break;
+    }
+  }
+  const chem={}; let idx=0;
+  CHEM_B.forEach(k=>{chem[k]=data.slice(idx,idx+n);idx+=n});
+  /* bỏ 270,27 nếu có */
+  if(data[idx]===270||data[idx]===27)idx++;
+  if(data[idx]===270||data[idx]===27)idx++;
+  const ys=data.slice(idx,idx+n);idx+=n;
+  const ts=data.slice(idx,idx+n);idx+=n;
+  const el=data.slice(idx,idx+n);
+
+  const rows=coils.map((c,i)=>{
+    const o={coil:c.coil,heat:c.heat,thick:1.0,width:1219,len:'',
+      wt:c.wt?Math.round(c.wt*1000):'',spec:meta.spec,dir:'',ypt:'',ys:'',ts:'',el:'',bend:'OK'};
+    CHEM_B.forEach(k=>{
+      if(i<(chem[k]||[]).length&&chem[k][i]!=null&&chem[k][i]!=='')
+        o[k]=+(chem[k][i]/SCALE[k]).toPrecision(6);
+    });
+    if(i<ys.length&&ys[i]>=150&&ys[i]<=500)o.ys=ys[i];
+    if(i<ts.length&&ts[i]>=200&&ts[i]<=800)o.ts=ts[i];
+    if(i<el.length&&el[i]>=10&&el[i]<=80)o.el=el[i];
+    return o;
+  });
+  return {rows,meta,note:' (Baohua/日照宝华: '+rows.length+' cuộn; hóa học ×100/×1000/×10000; KL tấn→kg)'};
+}
+
 /* ===== Hyundai Steel (검사증명서 – tiếng Hàn/Anh): Product No. = số cuộn ===== */
 const HY_ORDER=['C','Si','Mn','P','S','Cr','Ni','B','Cu','Mo','N','Nb','Ti','V','Al','TAl'],HY_DIV={2:100,3:1000,4:10000,5:100000};
 const HY_DIM=/^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)x(\w*)$/i;
@@ -692,25 +1150,64 @@ function parseHyundai(items,raw){
 }
 async function readPdf(buf,mid){
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  const pdf=await pdfjsLib.getDocument({data:buf.slice(0)}).promise,items=[],pages=[];
-  for(let p=1;p<=pdf.numPages;p++){const tc=await(await pdf.getPage(p)).getTextContent(),pi=[];
-    tc.items.forEach(t=>{if(t.str.trim()){const o={s:t.str,x:t.transform[4],y:t.transform[5]-(p-1)*3000,h:t.height||10};items.push(o);pi.push({...o,y:t.transform[5]})}});
-    pages.push({items:pi,raw:tc.items.map(t=>t.str).join(' ')})}
-  if(items.length>=10){
-    /* 1. Hyundai Steel (số cuộn = Product No., 13 trang = 13 chứng chỉ) */
-    if(pages.some(p=>/Product\s*No/i.test(p.raw)&&/Heat\s*No/i.test(p.raw))){
-      const rows=[],certs=[],specs=[];let meta={};
-      pages.forEach(p=>{const r=parseHyundai(p.items,p.raw);if(!r.rows.length)return;rows.push(...r.rows);
-        if(r.meta.cert&&!certs.includes(r.meta.cert))certs.push(r.meta.cert);if(r.meta.spec&&!specs.includes(r.meta.spec))specs.push(r.meta.spec);
-        meta={...meta,...Object.fromEntries(Object.entries(r.meta).filter(([,v])=>v))}});
-      if(rows.length){meta.cert=certs.length>1?certs[0]+' … '+certs[certs.length-1]+' ('+certs.length+' chứng chỉ)':certs[0]||'';meta.spec=specs.join(' / ');
-        return {rows,meta,note:' (Hyundai Steel: Product No. được dùng làm số cuộn; hóa học đã quy đổi theo hệ số ×100…×100.000; Sol-Al ghi vào cột Al)'}}
-    }
-    /* 2. Formosa / bố cục khác có chữ */
-    const r=parseItems(items);if(r.rows.length)return r;
-    try{return parseOcr(items,'')}catch(e){}
+  let pdf;
+  try{pdf=await pdfjsLib.getDocument({data:buf.slice(0)}).promise}
+  catch(e){msg(mid,'Không mở được PDF bằng pdf.js ('+e.message+') – chuyển sang OCR…');return ocrDoc(await pdfToCanvases(buf),mid,'trang','PDF scan')}
+  const items=[],pages=[];
+  for(let p=1;p<=pdf.numPages;p++){
+    try{
+      const tc=await(await pdf.getPage(p)).getTextContent(),pi=[];
+      tc.items.forEach(t=>{if(t.str&&t.str.trim()){const o={s:t.str,x:t.transform[4],y:t.transform[5]-(p-1)*3000,h:t.height||10};items.push(o);pi.push({...o,y:t.transform[5]})}});
+      pages.push({items:pi,raw:tc.items.map(t=>t.str||'').join(' ')});
+    }catch(e){pages.push({items:[],raw:''})}
   }
-  msg(mid,'PDF là bản scan (ảnh) – đang chuyển sang nhận dạng chữ (OCR), có thể mất vài phút…');
+  const allRaw=pages.map(p=>p.raw).join('\n')+'\n'+items.map(i=>i.s||'').join('')+'\n'+items.map(i=>i.s||'').join(' ');
+  /* 0. Baohua – ưu tiên regex trên raw (PDF cột dính) */
+  if(/宝华|Baohua|Rizhao|质保书号|H3[DE]\d{8,}|260612P00|SPHC/i.test(allRaw)){
+    try{
+      const rows=[],seen=new Set();let meta={},note='';
+      pages.forEach(p=>{
+        const r=parseBaohua(p.items,p.raw);
+        if(!r||!r.rows.length)return;
+        r.rows.forEach(x=>{if(!seen.has(x.coil)){seen.add(x.coil);rows.push(x)}});
+        Object.entries(r.meta||{}).forEach(([k,v])=>{if(v)meta[k]=v});
+        note=r.note||note;
+      });
+      if(!rows.length){
+        const r=parseBaohua(items,allRaw);
+        if(r&&r.rows.length){r.rows.forEach(x=>{if(!seen.has(x.coil)){seen.add(x.coil);rows.push(x)}});Object.assign(meta,r.meta||{});note=r.note||note}
+      }
+      if(rows.length)return {rows,meta,note};
+    }catch(e){console.warn('parseBaohua',e)}
+  }
+  /* 0b. JSW */
+  if(/JSW\s*Vijayanagar|JSW\s*STEEL|SAE\s*J403/i.test(allRaw)){
+    try{const r=parseJSW(items,allRaw);if(r&&r.rows.length)return r}catch(e){console.warn('parseJSW',e)}
+  }
+  if(items.length>=10){
+    if(pages.some(p=>/Product\s*No/i.test(p.raw)&&/Heat\s*No/i.test(p.raw))){
+      try{
+        const rows=[],certs=[],specs=[];let meta={};
+        pages.forEach(p=>{const r=parseHyundai(p.items,p.raw);if(!r||!r.rows.length)return;rows.push(...r.rows);
+          if(r.meta&&r.meta.cert&&!certs.includes(r.meta.cert))certs.push(r.meta.cert);if(r.meta&&r.meta.spec&&!specs.includes(r.meta.spec))specs.push(r.meta.spec);
+          meta={...meta,...Object.fromEntries(Object.entries(r.meta||{}).filter(([,v])=>v))}});
+        if(rows.length){meta.cert=certs.length>1?certs[0]+' … '+certs[certs.length-1]+' ('+certs.length+' chứng chỉ)':certs[0]||'';meta.spec=specs.join(' / ');
+          return {rows,meta,note:' (Hyundai Steel: Product No. = số cuộn; hóa học đã quy đổi ×100…×100.000)'}}
+      }catch(e){}
+    }
+    try{const r=parseItems(items);if(r&&r.rows.length)return r}catch(e){}
+    try{const r=parseOcr(items,'');if(r&&r.rows.length)return r}catch(e){}
+    /* Thử Baohua lần nữa trên toàn bộ raw (một số PDF để H3D ở cuối) */
+    try{const r=parseBaohua(items,allRaw);if(r&&r.rows.length)return r}catch(e){}
+  }
+  /* pdf.js trả 0 text (font CID / ToUnicode lỗi) → bắt buộc OCR ảnh */
+  if(!items.length)msg(mid,'PDF không trích được chữ (pdf.js = 0 item) – đang OCR ảnh trang. ROLL STEEL NO = số cuộn. Có thể mất 1–3 phút…');
+  else msg(mid,'PDF bố cục đặc biệt – đang OCR (có thể mất vài phút)…');
+  /* Bật OCR Trung nếu có dấu hiệu Baohua */
+  try{
+    const sel=$('ocrLang');
+    if(sel&&!/chi/.test(sel.value)){/* giữ nguyên lựa chọn user */}
+  }catch(e){}
   return ocrDoc(await pdfToCanvases(buf),mid,'trang','PDF scan');
 }
 async function ocrXlsxImages(buf,mid){
@@ -732,8 +1229,17 @@ async function parseFile(f,mid){
   throw err||new Error('File không có dòng dữ liệu cuộn thép hợp lệ và không chứa ảnh scan để nhận dạng.');
 }
 function fillInfo(m,replace){
-  const s=(id,v)=>{if(v||replace)$(id).value=v||''};
-  s('iSup',m.supplier);s('iCert',m.cert);s('iPO',m.contract);s('iSpec',m.spec);s('iDate',m.date);
+  /* Chỉ ghi đè khi có giá trị mới; nếu không tìm thấy thì để trống (khi replace=true) hoặc giữ nguyên */
+  const s=(id,v)=>{
+    if(v){$(id).value=v;return}
+    if(replace)$(id).value='';
+  };
+  s('iSup',m.supplier||'');
+  s('iCert',m.cert||'');
+  s('iPO',m.contract||'');
+  s('iSpec',m.spec||'');
+  s('iDate',m.date||'');
+  /* Số lô nhập không tự điền từ chứng chỉ – để trống nếu không có */
 }
 $('f2').onchange=async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
@@ -764,11 +1270,34 @@ function headMTC(){
 }
 function renderMTC(){
   const q=$('q2').value.trim().toLowerCase();
-  $('b2').innerHTML=mtc.map((r,i)=>({r,i})).filter(({r})=>!q||(r.coil+' '+r.heat).toLowerCase().includes(q)).map(({r,i})=>
-    '<tr>'+MC.map(c=>`<td><input class="c ${c[3]||''}" data-t="2" data-i="${i}" data-k="${c[0]}" value="${esc(r[c[0]])}"></td>`).join('')+
-    `<td id="cev${i}">${cev(r)}</td><td><button class="x2" title="Xóa dòng" onclick="mtc.splice(${i},1);renderMTC();recalc()">✕</button></td></tr>`).join('');
+  const globalSpec=($('iSpec')||{}).value||'';
+  let outCount=0;
+  $('b2').innerHTML=mtc.map((r,i)=>({r,i})).filter(({r})=>!q||(r.coil+' '+r.heat).toLowerCase().includes(q)).map(({r,i})=>{
+    const lim=stdLimits(r.spec||globalSpec);
+    return '<tr>'+MC.map(c=>{
+      const k=c[0],v=r[k];
+      let cls=c[3]||'';
+      let title='';
+      if(CHEM.includes(k)&&lim){
+        const bad=chemOutOfSpec(k,v,lim);
+        if(bad){cls+=' ngc';outCount++;
+          const L=lim[k];
+          title=` title="⚠ ${k}=${v} vượt ngưỡng ${Array.isArray(L)?L[0]+'–'+L[1]:'≤ '+L} (${lim.std||''})"`;
+        }
+      }
+      return `<td><input class="c ${cls}" data-t="2" data-i="${i}" data-k="${k}" value="${esc(v)}"${title}></td>`;
+    }).join('')+
+    `<td id="cev${i}">${cev(r)}</td><td><button class="x2" title="Xóa dòng" onclick="mtc.splice(${i},1);renderMTC();recalc()">✕</button></td></tr>`;
+  }).join('');
   $('coilList').innerHTML=mtc.map(r=>`<option value="${esc(r.coil)}">`).join('');
   $('kCoils').textContent=mtc.length;
+  /* Cập nhật ghi chú nếu có vượt chuẩn */
+  const m2=$('m2');
+  if(m2&&mtc.length&&outCount>0){
+    const base=m2.textContent.replace(/\s*·\s*⚠[^.]*\./g,'');
+    m2.textContent=base+(base.endsWith('.')?'':'')+' · ⚠ '+outCount+' giá trị hóa học vượt ngưỡng tiêu chuẩn mác thép (ô đỏ đậm).';
+    m2.className='msg err';
+  }
 }
 function addMTC(){mtc.push({coil:'MỚI-'+Date.now().toString().slice(-5)});renderMTC()}
 function loadSample(){
@@ -810,10 +1339,20 @@ function headAct(){
   <tr><th>Số cuộn</th><th>Mã số</th><th>Quy cách<br>mm</th><th>Khối lượng<br>tấn</th><th>C</th><th>Si</th><th>Mn</th><th>P</th><th>S</th><th>YS<br>MPa</th><th>TS<br>MPa</th><th>EL<br>%</th></tr>`;
 }
 function renderAct(){
-  const inp=(i,k,c='')=>`<td><input class="c ${c}" data-t="3" data-i="${i}" data-k="${k}" value="${esc(act[i][k])}"></td>`;
-  $('b3').innerHTML=act.map((a,i)=>`<tr data-i="${i}"><td>${i+1}</td><td><input class="c w" list="coilList" data-t="3" data-i="${i}" data-k="coil" value="${esc(a.coil)}"></td>${inp(i,'grade')}${inp(i,'qc','w')}${inp(i,'tons')}<td></td>`+
-   LK.map(k=>inp(i,k)).join('')+inp(i,'thick')+`<td><input class="c" placeholder="±${tolT()}" data-t="3" data-i="${i}" data-k="tol" value="${esc(a.tol)}"></td>`+inp(i,'width')+
-   `<td><button class="x2" title="Xóa dòng" onclick="act.splice(${i},1);renderAct()">✕</button></td></tr>`).join('');
+  const globalSpec=($('iSpec')||{}).value||'';
+  const inp=(i,k,c='',title='')=>`<td><input class="c ${c}" data-t="3" data-i="${i}" data-k="${k}" value="${esc(act[i][k])}"${title}></td>`;
+  $('b3').innerHTML=act.map((a,i)=>{
+    const lim=stdLimits(a.grade||globalSpec);
+    const chemInp=k=>{
+      const bad=CHEM.includes(k)&&lim?chemOutOfSpec(k,a[k],lim):null;
+      const L=lim&&lim[k];
+      const title=bad?` title="⚠ ${k}=${a[k]} vượt ngưỡng ${Array.isArray(L)?L[0]+'–'+L[1]:'≤ '+L}"`:'';
+      return inp(i,k,bad?'ngc':'',title);
+    };
+    return `<tr data-i="${i}"><td>${i+1}</td><td><input class="c w" list="coilList" data-t="3" data-i="${i}" data-k="coil" value="${esc(a.coil)}"></td>${inp(i,'grade')}${inp(i,'qc','w')}${inp(i,'tons')}<td></td>`+
+     LK.map(k=>['C','Si','Mn','P','S'].includes(k)?chemInp(k):inp(i,k)).join('')+inp(i,'thick')+`<td><input class="c" placeholder="±${tolT()}" data-t="3" data-i="${i}" data-k="tol" value="${esc(a.tol)}"></td>`+inp(i,'width')+
+     `<td><button class="x2" title="Xóa dòng" onclick="act.splice(${i},1);renderAct()">✕</button></td></tr>`;
+  }).join('');
   recalc();
 }
 function addAct(){act.push({coil:''});renderAct()}
@@ -869,13 +1408,28 @@ document.addEventListener('input',e=>{
   const only=(sel)=>t.closest(sel).querySelectorAll('input[type=checkbox]').forEach(x=>{if(x!==t)x.checked=false});
   if(d.t==='K'){ck[d.id]=t.checked?d.v:'';document.querySelectorAll('input[data-t=K][data-id="'+d.id+'"]').forEach(x=>x.checked=x.dataset.v===ck[d.id]);return recalc()}
   const arr=d.t==='2'?mtc:act;arr[d.i][d.k]=t.value;
-  if(d.t==='2'){const c=$('cev'+d.i);if(c)c.textContent=cev(mtc[d.i]);if(d.k==='coil')renderCoilList()}
+  if(d.t==='2'){
+    const c=$('cev'+d.i);if(c)c.textContent=cev(mtc[d.i]);if(d.k==='coil')renderCoilList();
+    /* Tô đỏ nếu hóa học vượt chuẩn mác thép */
+    if(CHEM.includes(d.k)||d.k==='spec'){
+      const r=mtc[d.i],lim=stdLimits(r.spec||($('iSpec')||{}).value||'');
+      if(CHEM.includes(d.k)){
+        const bad=chemOutOfSpec(d.k,t.value,lim);
+        t.classList.toggle('ngc',!!bad);
+        t.title=bad?('⚠ vượt ngưỡng '+(Array.isArray(lim[d.k])?lim[d.k].join('–'):'≤ '+lim[d.k])):"";
+      }else if(d.k==='spec')renderMTC();
+    }
+  }
   recalc();
 });
 document.addEventListener('change',e=>{
   const t=e.target,d=t.dataset;if(!d||d.t!=='3'||d.k!=='coil')return;
   const m=mtc.find(r=>String(r.coil)===t.value.trim());if(!m)return;
   const n=rowFrom(m),a=act[d.i];['thick','tol','width'].forEach(k=>n[k]=a[k]??'');act[d.i]=n;renderAct();
+});
+/* Khi đổi mác thép / tiêu chuẩn ở mục 1 → tô lại màu hóa học */
+document.addEventListener('input',e=>{
+  if(e.target&&e.target.id==='iSpec'){renderMTC();renderAct()}
 });
 const renderCoilList=()=>$('coilList').innerHTML=mtc.map(r=>`<option value="${esc(r.coil)}">`).join('');
 function clr(t){if(!confirm('Xóa toàn bộ dữ liệu bảng '+t+'?'))return;if(t===2){mtc=[];renderMTC();fillInfo({},true)}else act=[];renderAct()}

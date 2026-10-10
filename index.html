@@ -75,17 +75,28 @@ input.c.okc{color:var(--ok);font-weight:700}input.c.ngc{color:var(--bad);font-we
 tr.cur td{background:#e8f3f6}.sm{padding:4px 9px!important;font-size:12px!important}
 @media(max-width:1000px){.kpis.k5{grid-template-columns:1fr 1fr}.kpis{grid-template-columns:1fr 1fr}.grid{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}.kv{grid-template-columns:1fr}}
 @media print{
- @page{size:A4 landscape;margin:10mm}
- body{background:#fff}header,.no-print,#p0,#p1{display:none!important}
- #p2{display:block!important}.wrap{padding:0;max-width:none}.report{border:0;padding:0;max-width:none}
- .tg{border:1px solid #999}h3,tr{break-inside:avoid}
+ @page{size:A4 landscape;margin:8mm 9mm}
+ html,body{background:#fff!important}
+ header,.no-print,#p0,#p1,.toast{display:none!important}
+ #p2{display:block!important}.wrap{padding:0;max-width:none}
+ .report{border:0;padding:0;max-width:none;font-size:11px}
+ .report .logo{max-width:430px!important;margin-bottom:6px!important}
+ .report h1{font-size:16px;margin-bottom:4px!important}
+ .report h3{font-size:12px;margin:10px 0 4px;break-after:avoid}
+ .report .kv{grid-template-columns:repeat(3,1fr)!important;gap:2px 18px;font-size:11px}
+ .report .kv div{padding:2px 0}
+ .report table{width:100%;font-size:9.5px}.report th,.report td{padding:2px 3px}
+ .report thead{display:table-header-group}.report tr{break-inside:avoid}
+ .report .keep{break-inside:avoid}
+ .report .sign{margin-top:14px}.report .sign div{height:70px}
+ .tg{border:1px solid #999;padding:0 6px}
 }
 </style>
 </head>
 <body>
 <header class="no-print">
   <div class="top">
-    <div><h1>Kiểm tra chứng chỉ chất lượng thép cuộn cán nóng (HRC)</h1><div class="sub">Đối chiếu dữ liệu MTC của nhà cung cấp với kết quả đo kiểm thực tế khi nhập hàng</div></div>
+    <div><h1>Dự Thảo Kiểm Tra Nguyên Liệu Thép Cuộn Cán Nóng (HRC)</h1><div class="sub">Đối chiếu dữ liệu MTC của nhà cung cấp với kết quả đo kiểm thực tế khi nhập hàng</div></div>
   </div>
   <nav class="tabs"><button class="tab on" data-t="p0">Dashboard theo dõi</button><button class="tab" data-t="p1">Kiểm tra &amp; đối chiếu</button><button class="tab" data-t="p2">Báo cáo xuất PDF</button></nav>
 </header>
@@ -100,7 +111,7 @@ tr.cur td{background:#e8f3f6}.sm{padding:4px 9px!important;font-size:12px!import
     <div class="btns"><button class="b p" onclick="newRec(true)">+ Phiếu kiểm tra mới</button><button class="b" onclick="exportRecs()">Tải danh sách Excel</button><button class="b" onclick="backup()">Sao lưu (JSON)</button><button class="b" onclick="pick('fRest')">Khôi phục</button></div>
   </div>
   <input type="file" id="fRest" hidden accept=".json">
-  <div class="kpis k5" id="dK"></div>
+  <div class="kpis" id="dK"></div>
   <section class="two">
     <div class="panel"><div class="ph"><div><h2>Quyết định theo phiếu</h2></div></div><div id="dDec"></div></div>
     <div class="panel"><div class="ph"><div><h2>Tỷ lệ cuộn đạt – 10 phiếu gần nhất</h2></div></div><div id="dRecent"></div></div>
@@ -110,7 +121,7 @@ tr.cur td{background:#e8f3f6}.sm{padding:4px 9px!important;font-size:12px!import
   <section class="panel">
     <div class="ph"><div><h2>Danh sách phiếu đã lưu</h2></div>
       <div class="btns"><input class="search" id="dQ" placeholder="Tìm nhà cung cấp / số chứng chỉ / PO…" oninput="renderDash()">
-      <select class="search" id="dF" style="width:180px" onchange="renderDash()"><option value="">Tất cả quyết định</option><option>Chấp nhận</option><option>Giữ lại xem xét</option><option>Từ chối</option><option>Chờ quyết định</option></select></div></div>
+      <select class="search" id="dF" style="width:180px" onchange="renderDash()"><option value="">Tất cả quyết định</option><option>Chấp nhận</option><option>Giữ lại xem xét</option><option>Từ chối</option></select></div></div>
     <div class="tw"><table class="ns"><thead><tr><th>Ngày lưu</th><th>Nhà cung cấp</th><th>Số chứng chỉ</th><th>Mác thép / tiêu chuẩn</th><th>Số cuộn</th><th>Cuộn mẫu</th><th>Tỷ lệ đạt</th><th>Quyết định</th><th>Người kiểm tra</th><th></th></tr></thead><tbody id="dList"></tbody></table></div>
   </section>
 </div>
@@ -139,9 +150,12 @@ tr.cur td{background:#e8f3f6}.sm{padding:4px 9px!important;font-size:12px!import
 
   <section class="panel">
     <div class="ph">
-      <div><h2>2 · Dữ liệu chứng chỉ MTC của nhà cung cấp</h2><p>Nhập từ file Excel (EDI) hoặc PDF chứng chỉ (Mill Certificate). Hỗ trợ cột SỐ CUỘN / COIL No. / Coil Number… File PDF/Excel dạng scan ảnh (không có chữ) sẽ không đọc được – cần file có text hoặc Excel.</p></div>
+      <div><h2>2 · Dữ liệu chứng chỉ MTC của nhà cung cấp</h2><p>Nhập từ file Excel (EDI) hoặc PDF chứng chỉ (Mill Certificate). Hỗ trợ cột SỐ CUỘN / COIL No. / Coil Number… Đọc được Excel, PDF có chữ (Formosa, Hòa Phát, Hyundai Steel…), PDF scan giấy và ảnh chụp; tiêu đề tiếng Việt / Anh / Trung / Hàn.</p></div>
       <div class="btns">
         <input class="search" id="q2" placeholder="Tìm số cuộn / số mẻ…" oninput="renderMTC()">
+        <select id="ocrLang" class="search" style="width:200px" title="Ngôn ngữ nhận dạng chữ khi nhập file scan"><option value="eng">OCR: Việt / Anh</option><option value="eng+chi_sim">OCR: + Tiếng Trung</option><option value="eng+kor">OCR: + Tiếng Hàn</option></select>
+        <button class="b" onclick="odOpen()" title="Mở thư mục OneDrive chứa MTC">☁ Mở OneDrive MTC</button>
+        <button class="b" onclick="odPick()" title="Chọn file trực tiếp từ OneDrive">☁ Chọn từ OneDrive</button>
         <button class="b p" onclick="pick('f2')">Nhập từ Excel / PDF / scan</button>
         <button class="b" onclick="loadSample()">Nạp dữ liệu mẫu</button>
         <button class="b" onclick="addMTC()">+ Thêm cuộn</button>
@@ -149,6 +163,13 @@ tr.cur td{background:#e8f3f6}.sm{padding:4px 9px!important;font-size:12px!import
         <button class="b d" onclick="clr(2)">Xóa hết</button>
       </div>
     </div>
+    <details class="msg" id="odBox" style="margin-bottom:10px"><summary style="cursor:pointer"><b>☁ Kết nối OneDrive (thư mục MTC HRC của nhà cung cấp)</b></summary>
+      <div class="grid" style="grid-template-columns:2fr 1fr;margin-top:10px">
+        <div class="f"><label>Link thư mục OneDrive chứa MTC</label><input id="odLink"></div>
+        <div class="f"><label>Client ID ứng dụng Microsoft (để chọn file trực tiếp)</label><input id="odId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
+      </div>
+      <div class="btns" style="margin-top:10px"><button class="b p" onclick="odOpen()">Mở thư mục OneDrive</button><button class="b" onclick="odPick()">Chọn file từ OneDrive</button><button class="b" onclick="odPaste()">Nhập từ link chia sẻ của 1 file…</button></div>
+      <p style="margin:10px 0 0;line-height:1.6"><b>Cách dùng:</b> (1) “Mở thư mục OneDrive” để xem MTC của các nhà cung cấp, tải file về rồi bấm “Nhập từ Excel / PDF / scan”; hoặc (2) “Nhập từ link chia sẻ của 1 file…” – dán link chia sẻ <u>của file</u> (không phải thư mục), trang sẽ tự tải và nhập; hoặc (3) “Chọn file từ OneDrive” – cửa sổ chọn file của Microsoft, cần Client ID (đăng ký ứng dụng miễn phí tại entra.microsoft.com → App registrations, loại tài khoản “Personal Microsoft accounts”, nền tảng Web, Redirect URI = địa chỉ trang này; chỉ chạy khi trang mở bằng https như GitHub Pages).</p></details>
     <input type="file" id="f2" hidden accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg,.webp,.bmp,.tif,.tiff">
     <p class="msg" id="m2">Chưa có dữ liệu. Chọn “Nhập từ Excel / PDF / ảnh”. Hỗ trợ: Excel, PDF có chữ, PDF scan, Excel scan (chèn ảnh) và ảnh chụp bảng; cột nhận diện: SỐ CUỘN / COIL No. Với file scan, hệ thống tự nhận dạng chữ (OCR) – hãy rà soát lại số liệu.</p>
     <div class="tw"><table id="t2"><thead id="h2"></thead><tbody id="b2"></tbody></table></div>
@@ -258,7 +279,7 @@ const ALIAS={
   bend:['bending','bend','uốn','uon'],
   contract:['contractno','hopdong','hợpđồng','po','pono','sốhđ','sohd','contract','so hop dong','hợp đồng']
 };
-const norm=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d').replace(/[^a-z0-9]/g,'');
+const norm=s=>String(s??'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').normalize('NFC').replace(/đ/g,'d').replace(/[^a-z0-9\u3400-\u9fff\uac00-\ud7af]/g,'');
 /* header khớp linh hoạt: chứa keyword, keyword chứa header, hoặc khớp gần */
 function matchAlias(n, keys){
   if(!n)return false;
@@ -278,10 +299,10 @@ function isCoilLike(v){
   return /^\d{5,14}$/.test(s) || /^[A-Za-z]{1,4}\d{5,14}$/.test(s);
 }
 /* ===== Đọc Excel: hỗ trợ tiêu đề nhiều dòng (song ngữ), hệ số ×100/×1.000/×10.000, mã cuộn dạng chữ+số ===== */
-const FIELD={coil:['socuon','coilno','coilnumber','macuon'],thick:['thickness','doday'],width:['width','dorong','chieurong'],len:['length','chieudai'],
-  wt:['netweight','khoiluong','weight'],heat:['heatno','heat','mesonau'],ys:['yield','gioihanchay'],ts:['tensile','gioihanben'],el:['elongation','dogiandai','giandai'],
-  bend:['bending','thuuon'],dir:['direction','huong']};
-const EXACT={ys:['ys','yp','rp02'],ts:['ts','uts','rm'],el:['el','a50'],spec:['specification','spec','grade','tieuchuan','mac','macthep'],dir:['dir']};
+const FIELD={coil:['socuon','coilno','coilnumber','macuon','productno','卷号','钢卷号','卷筒号','带钢号','捲號','鋼捲號','제품번호','코일번호'],thick:['thickness','doday','厚度','두께'],width:['width','dorong','chieurong','宽度','寬度','폭'],len:['length','chieudai','长度','長度'],
+  wt:['netweight','khoiluong','weight','净重','淨重','重量','중량'],heat:['heatno','heat','mesonau','炉号','炉批号','爐號','熔炼号','제강번호'],ys:['yield','gioihanchay','屈服','항복'],ts:['tensile','gioihanben','抗拉','抗张','인장강도'],el:['elongation','dogiandai','giandai','延伸','伸长','伸長','연신'],
+  bend:['bending','thuuon','弯曲','彎曲','굴곡'],dir:['direction','huong']};
+const EXACT={ys:['ys','yp','rp02'],ts:['ts','uts','rm'],el:['el','a50'],spec:['specification','spec','grade','tieuchuan','mac','macthep','牌号','钢种','鋼種','제품규격'],dir:['dir']};
 const DEFSC={C:100,Si:100,Mn:100,S:1000,P:1000,Cu:1000,Ni:1000,Cr:1000,Mo:1000,V:10000,Ti:10000,Al:10000,B:10000};
 const cellStr=v=>v instanceof Date?v.toLocaleDateString('vi-VN'):String(v??'').trim();
 function parseGrid(rows,opts){
@@ -342,7 +363,7 @@ function parseGrid(rows,opts){
     o.coil=String(r[coilCol]).replace(/[\s\-_/.]/g,'').toUpperCase();
     ['thick','width','wt','ys','ts','el'].forEach(k=>{if(k in o)o[k]=fix(o[k])});
     if('len' in o)o.len=num(o.len)==null?String(o.len||''):fix(o.len);
-    CHEM.forEach(c=>{if(c in map){const v=num(o[c]);const s=scale[map[c]]||(opts.defScale?DEFSC[c]:0);o[c]=v==null?'':+(s?v/s:v).toPrecision(6)}});
+    CHEM.forEach(c=>{if(c in map){const v=num(o[c]);const s=opts.defScale?DEFSC[c]:scale[map[c]];o[c]=v==null?'':+(s?v/s:v).toPrecision(6)}});
     o.heat=String(o.heat??'').trim();o.spec=String(o.spec??meta.spec).trim()||meta.spec;
     out.push(o);
   }
@@ -414,12 +435,13 @@ const fixTok=s=>{const d=s.replace(/[^A-Za-z0-9]/g,'');const dg=(d.match(/\d/g)|
   return d.length>=6&&dg/d.length>=.85?d.replace(/[Oo]/g,'0').replace(/[Il|]/g,'1').replace(/S/g,'5').replace(/B/g,'8'):s};
 const nv=x=>{x=String(x).replace(/[^\d.,]/g,'');if(!x)return null;
   x=/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(x)?x.replace(/,/g,''):x.replace(',','.');const n=parseFloat(x);return isNaN(n)?null:n};
-let ocrW=null,ocrLog=()=>{};
+let ocrWs={},ocrLog=()=>{};
 async function ocrWorker(){
   if(typeof Tesseract==='undefined')throw new Error('Chưa tải được thư viện OCR (Tesseract.js). Hãy kiểm tra kết nối mạng rồi tải lại trang.');
-  if(!ocrW){ocrW=await Tesseract.createWorker('eng',1,{logger:m=>{if(m.status==='recognizing text')ocrLog(m.progress)}});
-    await ocrW.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'})}
-  return ocrW;
+  const lang=($('ocrLang')||{}).value||'eng';
+  if(!ocrWs[lang]){const w=await Tesseract.createWorker(lang,1,{logger:m=>{if(m.status==='recognizing text')ocrLog(m.progress)}});
+    await w.setParameters({tessedit_pageseg_mode:'6',preserve_interword_spaces:'1'});ocrWs[lang]=w}
+  return ocrWs[lang];
 }
 /* phóng to ảnh nhỏ để OCR đọc chính xác số liệu */
 async function bigCanvas(src){
@@ -490,9 +512,33 @@ const POS29={coil:1,thick:2,width:3,len:4,wt:5,heat:6,ys:7,ts:8,el:9,bend:11,C:1
 function detectGrid(dark,W,H){
   const vr=new Int32Array(W),vs=new Int32Array(W);
   for(let x=0;x<W;x++){let b=0,c=0,bs=0;for(let y=0;y<H;y++){if(dark[y*W+x]){c++;if(c>b){b=c;bs=y-c+1}}else c=0}vr[x]=b;vs[x]=bs}
-  const cl=[];for(let x=0;x<W;x++)if(vr[x]>=H*.12){const L=cl[cl.length-1];if(L&&x-L[L.length-1]<=8)L.push(x);else cl.push([x])}
+  const cand=[];for(let x=0;x<W;x++)if(vr[x]>=H*.04)cand.push(vr[x]);cand.sort((a,b)=>a-b);
+  const thr=Math.max(H*.04,.4*(cand[Math.floor(cand.length*.85)]||0));        // ngưỡng thích ứng: bảng ngắn (ít dòng) vẫn nhận được
+  const cl=[];for(let x=0;x<W;x++)if(vr[x]>=thr){const L=cl[cl.length-1];if(L&&x-L[L.length-1]<=8)L.push(x);else cl.push([x])}
   if(!cl.length)return{lines:[],top:0};
-  return{lines:cl.map(c=>Math.round(c.reduce((a,b)=>a+b)/c.length)),top:Math.min(...cl.map(c=>Math.min(...c.map(x=>vs[x]))))};
+  let L=cl.map(c=>{const m=c[c.length>>1];return{x:Math.round(c.reduce((a,b)=>a+b)/c.length),s:vs[m],r:vr[m]}});
+  const med=L.map(l=>l.s).sort((a,b)=>a-b)[L.length>>1];                  // bỏ đường kẻ giả (mép giấy, vết bẩn) bắt đầu quá xa bảng
+  L=L.filter(l=>Math.abs(l.s-med)<H*.25);
+  return{lines:L.map(l=>l.x),top:Math.min(...L.map(l=>l.s))};
+}
+/* Ước lượng độ nghiêng của trang scan (rad) dựa trên các nét dọc dài (đường kẻ bảng) */
+function estimateSkew(dark,W,H){
+  const pts=[];
+  for(let x=0;x<W;x++){let y=0;while(y<H){if(dark[y*W+x]){let j=y;while(j<H&&dark[j*W+x])j++;if(j-y>=40)for(let k=y;k<j;k+=3)pts.push(x,k);y=j}else y++}}
+  const n=pts.length>>1;if(n<500)return 0;
+  const bins=new Int32Array(W*2+10),score=th=>{bins.fill(0);const c=Math.cos(th),s=Math.sin(th);let sc=0;
+    for(let i=0;i<n;i++)bins[Math.round(pts[2*i]*c-pts[2*i+1]*s)+W]++;
+    for(let i=0;i<bins.length;i++)sc+=bins[i]*bins[i];return sc};
+  let best=0,bs=score(0);
+  for(let d=-2;d<=2.001;d+=.25){const th=d*Math.PI/180,s=score(th);if(s>bs){bs=s;best=th}}
+  const c0=best;
+  for(let d=-.25;d<=.251;d+=.05){const th=c0+d*Math.PI/180,s=score(th);if(s>bs){bs=s;best=th}}
+  return best;
+}
+function darkMap(cv){
+  const W=cv.width,H=cv.height,d=cv.getContext('2d').getImageData(0,0,W,H).data,dark=new Uint8Array(W*H);
+  for(let i=0,p=0;i<W*H;i++,p+=4)dark[i]=(d[p]*.3+d[p+1]*.59+d[p+2]*.11)<170?1:0;
+  return dark;
 }
 function stripLines(dark,W,H){
   const mh=Math.round(W*.02),mv=Math.round(H*.03),out=dark.slice();
@@ -513,7 +559,7 @@ function rowBands(ink,W,H,x0,x1,y0){
   if(s>=0)B.push([s,H-1]);
   B=B.filter(b=>b[1]-b[0]>=4);if(!B.length)return B;
   const med=B.map(b=>b[1]-b[0]).sort((a,b)=>a-b)[B.length>>1],M=[B[0].slice()];
-  for(const b of B.slice(1)){const L=M[M.length-1];if(b[0]-L[1]<med*.35)L[1]=b[1];else M.push(b.slice())}
+  for(const b of B.slice(1)){const L=M[M.length-1];if((b[1]-b[0]<med*.3||L[1]-L[0]<med*.3)&&b[0]-L[1]<med*.5)L[1]=b[1];else M.push(b.slice())}   // chỉ gộp các mảnh nhỏ (dấu chấm, dấu phụ)
   return M;
 }
 function bandsToGrid(ws,bands,nc){
@@ -542,12 +588,18 @@ function metaFromText(text){
   m.contract=g(/Contract\s*No\.?\s*[:.]?\s*([\w.\/\-]{6,})/i);
   const mg=g(/Grade\s*[:.]?\s*([A-Z]{2,4}\s?\d{3,5}\w*)/),sd=g(/Standard\s*[:.]?\s*([A-Z]{2,4}\s?[A-Z]?\d{2,5}(?::\d{4})?)/);
   m.spec=(sd+' '+mg).trim();const s=g(/MILL\s*[:.]?\s*(.{8,70}?)(?:\s+ADD|\n|$)/);if(s)m.supplier=s;
+  m.cert=m.cert||g(/(?:质保书号|证书编号|证书号|品质证明书号)\s*[:：]?\s*([\w\-\/]{5,})/);m.date=m.date||g(/(?:日期|出具日期)\s*[:：]?\s*(\d{4}[-\/年.]\d{1,2}[-\/月.]\d{1,2})/);
+  m.contract=m.contract||g(/(?:合同号|合同编号)\s*[:：]?\s*([\w.\/\-]{5,})/);
   m.total=parseInt(g(/Total\s*Coils\s*[:.]?\s*(\d{1,5})/i))||0;
   return m;
 }
 async function ocrPage(cv,mid,label){
-  const W=cv.width,H=cv.height,d=cv.getContext('2d').getImageData(0,0,W,H).data,dark=new Uint8Array(W*H);
-  for(let i=0,p=0;i<W*H;i++,p+=4)dark[i]=(d[p]*.3+d[p+1]*.59+d[p+2]*.11)<170?1:0;
+  let W=cv.width,H=cv.height,dark=darkMap(cv);
+  const th=estimateSkew(dark,W,H);
+  if(Math.abs(th)>.0008){                    // xoay thẳng trang bị nghiêng khi scan
+    const c3=document.createElement('canvas');c3.width=W;c3.height=H;const g3=c3.getContext('2d');
+    g3.fillStyle='#fff';g3.fillRect(0,0,W,H);g3.translate(W/2,H/2);g3.rotate(th);g3.drawImage(cv,-W/2,-H/2);cv=c3;dark=darkMap(cv);
+  }
   const {lines,top}=detectGrid(dark,W,H);
   if(lines.length<8)return null;
   const clean=stripLines(dark,W,H),er=eraseMask(dark,clean,W,H,2),c2=document.createElement('canvas');c2.width=W;c2.height=H;
@@ -615,16 +667,50 @@ async function pdfToCanvases(buf){
   }
   return out;
 }
+/* ===== Hyundai Steel (검사증명서 – tiếng Hàn/Anh): Product No. = số cuộn ===== */
+const HY_ORDER=['C','Si','Mn','P','S','Cr','Ni','B','Cu','Mo','N','Nb','Ti','V','Al','TAl'],HY_DIV={2:100,3:1000,4:10000,5:100000};
+const HY_DIM=/^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)x(\w*)$/i;
+function parseHyundai(items,raw){
+  items=items.slice().sort((a,b)=>b.y-a.y);const lines=[];
+  for(const it of items){const L=lines[lines.length-1];if(L&&Math.abs(L.y-it.y)<=4)L.it.push(it);else lines.push({y:it.y,it:[it]})}
+  const toks=lines.map(L=>L.it.sort((a,b)=>a.x-b.x).map(i=>i.s.trim()).join(' ').split(/\s+/).filter(Boolean));
+  let codes=[4,3,3,4,4,2,2,4,3,2,4,3,3,3,3,3];
+  for(const t of toks)if(t.length>=14&&t.length<=17&&t.every(x=>/^[2-5]$/.test(x))){codes=t.map(Number);break}
+  const g=re=>(raw.match(re)||[])[1]||'';
+  const spec=g(/Specification\s*:?\s*([A-Za-z0-9][A-Za-z0-9 .\-]*?)(?=\s+(?:Contractor|[가-힣])|\s*$)/).trim();
+  const rows=[];
+  for(const t of toks){
+    const m=HY_DIM.exec(t[0]||'');if(!m||t.length<6)continue;
+    const rest=t.slice(5),di=rest.findIndex(x=>/^[LP]$/.test(x));if(di<0)continue;
+    const pre=rest.slice(0,di),chem=rest.slice(di+1).filter(x=>num(x)!=null),nums=pre.filter(x=>num(x)!=null);
+    const o={coil:t[4],thick:fix(m[1]),width:fix(m[2]),len:m[3],wt:fix(t[2]),heat:t[3],spec,dir:'L',ypt:'',ys:'',ts:'',el:'',bend:pre.some(x=>/^(good|ok|pass)$/i.test(x))?'OK':''};
+    if(nums.length>=3){o.ys=fix(nums[0]);o.ts=fix(nums[1]);o.el=fix(nums[2])}
+    HY_ORDER.forEach((k,i)=>{if(i<chem.length&&CHEM.includes(k)){const d=HY_DIV[codes[i]]||1;o[k]=+(num(chem[i])/d).toPrecision(6)}});
+    rows.push(o);
+  }
+  return {rows,meta:{cert:g(/Certificate\s*No\.?\s*:?\s*(\d[\w-]+)/),date:g(/Date\s*of\s*Issue\s*:?\s*(\d{4}-\d{2}-\d{2})/),contract:g(/Order\s*No\.?\s*:?\s*(\w{5,})/),spec,supplier:/HYUNDAI\s*STEEL|현대제철/i.test(raw)?'Hyundai Steel':''}};
+}
 async function readPdf(buf,mid){
   pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-  const pdf=await pdfjsLib.getDocument({data:buf.slice(0)}).promise,items=[];
-  for(let p=1;p<=pdf.numPages;p++){const tc=await(await pdf.getPage(p)).getTextContent();
-    tc.items.forEach(t=>{if(t.str.trim())items.push({s:t.str,x:t.transform[4],y:t.transform[5]-(p-1)*3000,h:t.height||10})})}
+  const pdf=await pdfjsLib.getDocument({data:buf.slice(0)}).promise,items=[],pages=[];
+  for(let p=1;p<=pdf.numPages;p++){const tc=await(await pdf.getPage(p)).getTextContent(),pi=[];
+    tc.items.forEach(t=>{if(t.str.trim()){const o={s:t.str,x:t.transform[4],y:t.transform[5]-(p-1)*3000,h:t.height||10};items.push(o);pi.push({...o,y:t.transform[5]})}});
+    pages.push({items:pi,raw:tc.items.map(t=>t.str).join(' ')})}
   if(items.length>=10){
+    /* 1. Hyundai Steel (số cuộn = Product No., 13 trang = 13 chứng chỉ) */
+    if(pages.some(p=>/Product\s*No/i.test(p.raw)&&/Heat\s*No/i.test(p.raw))){
+      const rows=[],certs=[],specs=[];let meta={};
+      pages.forEach(p=>{const r=parseHyundai(p.items,p.raw);if(!r.rows.length)return;rows.push(...r.rows);
+        if(r.meta.cert&&!certs.includes(r.meta.cert))certs.push(r.meta.cert);if(r.meta.spec&&!specs.includes(r.meta.spec))specs.push(r.meta.spec);
+        meta={...meta,...Object.fromEntries(Object.entries(r.meta).filter(([,v])=>v))}});
+      if(rows.length){meta.cert=certs.length>1?certs[0]+' … '+certs[certs.length-1]+' ('+certs.length+' chứng chỉ)':certs[0]||'';meta.spec=specs.join(' / ');
+        return {rows,meta,note:' (Hyundai Steel: Product No. được dùng làm số cuộn; hóa học đã quy đổi theo hệ số ×100…×100.000; Sol-Al ghi vào cột Al)'}}
+    }
+    /* 2. Formosa / bố cục khác có chữ */
     const r=parseItems(items);if(r.rows.length)return r;
-    try{return parseOcr(items,'')}catch(e){}              // lớp chữ có sẵn nhưng bố cục khác
+    try{return parseOcr(items,'')}catch(e){}
   }
-  msg(mid,'PDF là bản scan (ảnh) – đang chuyển sang nhận dạng chữ (OCR), có thể mất vài chục giây…');
+  msg(mid,'PDF là bản scan (ảnh) – đang chuyển sang nhận dạng chữ (OCR), có thể mất vài phút…');
   return ocrDoc(await pdfToCanvases(buf),mid,'trang','PDF scan');
 }
 async function ocrXlsxImages(buf,mid){
@@ -817,7 +903,7 @@ function renderReport(){
   const sym=s=>`${s==='ok'?'☑':'☐'} Đạt &nbsp; ${s==='ng'?'☒':'☐'} Không đạt`;
   const ty=$('iSupType').value==='new'?'Nhà cung cấp mới':'Nhà cung cấp cũ, chất lượng ổn định';
   $('report').innerHTML=`
-  <img src="${LOGO}" alt="Tôn Nam Kim" style="display:block;width:100%;max-width:560px;margin:0 auto 14px">
+  <img class="logo" src="${LOGO}" alt="Tôn Nam Kim" style="display:block;width:100%;max-width:560px;margin:0 auto 14px">
   <h1 style="margin-bottom:14px">BIÊN BẢN KIỂM TRA NGUYÊN LIỆU HRC ĐẦU VÀO</h1>
   <h3>I. Thông tin chứng chỉ &amp; lô hàng</h3>
   <div class="kv"><div><b>Nhà cung cấp:</b> ${v('iSup')}</div><div><b>Số chứng chỉ:</b> ${v('iCert')}</div><div><b>Số hợp đồng / PO:</b> ${v('iPO')}</div>
@@ -831,14 +917,14 @@ function renderReport(){
   (act.length?act.map((a,i)=>{const r=rs[i];return `<tr><td>${i+1}</td><td>${esc(a.coil)}</td><td>${esc(a.grade)}</td><td>${esc(a.qc)}</td><td>${esc(a.tons)}</td><td></td>${LK.map(k=>col(a,r,k)).join('')}${col(a,r,'thick')}<td>±${esc(a.tol)||tolT()}</td>${col(a,r,'width')}</tr>`}).join(''):'<tr><td colspan="18">Chưa có dữ liệu.</td></tr>')+
   `</tbody></table>
   <p style="font-size:11px;color:#5c6b78">(*) Được quy định theo tiêu chuẩn sản phẩm hoặc TDS thỏa thuận giữa Nam Kim và nhà cung cấp. Dung sai khổ: ±${$('tolW').value} mm. Cuộn đạt = khớp số cuộn với bảng 2 và C, Si, Mn, P, S lệch không quá ±0,1 / ±0,02 / ±0,005 / ±0,0005 (theo chữ số có nghĩa đầu tiên của giá trị MTC).</p>
-  <h3>IV. Đánh giá theo yêu cầu QĐ04-QA</h3>
-  <table style="text-align:left"><tbody>`+CK.filter(x=>x.length===1||!x[2]||x[2]===$('iSupType').value).map(x=>x.length===1?`<tr><td colspan="2" style="text-align:left;background:#dde5ea"><b>${x[0]}</b></td></tr>`:`<tr class="ckr2"><td style="text-align:left;white-space:normal">${x[1]}</td><td style="width:220px;white-space:nowrap"><label><input type="checkbox" data-t="K" data-id="${x[0]}" data-v="ok" ${ck[x[0]]==='ok'?'checked':''}> Đạt</label> &nbsp; <label><input type="checkbox" data-t="K" data-id="${x[0]}" data-v="ng" ${ck[x[0]]==='ng'?'checked':''}> Không đạt</label></td></tr>`).join('')+`</tbody></table>
-  <h3>V. Kết luận &amp; phê duyệt</h3>
+  <div class="keep"><h3>IV. Đánh giá theo yêu cầu QĐ04-QA</h3>
+  <table style="text-align:left"><tbody>`+CK.filter(x=>x.length===1||!x[2]||x[2]===$('iSupType').value).map(x=>x.length===1?`<tr><td colspan="2" style="text-align:left;background:#dde5ea"><b>${x[0]}</b></td></tr>`:`<tr class="ckr2"><td style="text-align:left;white-space:normal">${x[1]}</td><td style="width:220px;white-space:nowrap"><label><input type="checkbox" data-t="K" data-id="${x[0]}" data-v="ok" ${ck[x[0]]==='ok'?'checked':''}> Đạt</label> &nbsp; <label><input type="checkbox" data-t="K" data-id="${x[0]}" data-v="ng" ${ck[x[0]]==='ng'?'checked':''}> Không đạt</label></td></tr>`).join('')+`</tbody></table></div>
+  <div class="keep"><h3>V. Kết luận &amp; phê duyệt</h3>
   <div class="kv"><div><b>Người kiểm tra:</b> ${v('iQC')}</div><div><b>Ngày kiểm tra:</b> ${v('iQDate')}</div><div><b>Phòng thử / thiết bị:</b> ${v('iEq')}</div>
   <div><b>Phương pháp lấy mẫu:</b> ${v('iSamp')}</div><div><b>Quyết định:</b> <strong>${v('iDec')}</strong></div></div>
   <div style="border:1px solid #c9d1d8;min-height:70px;padding:6px 8px;font-size:12px;white-space:pre-wrap;margin-top:8px"><b>Kết luận của QC:</b> ${esc($('iConc').value)}</div>
   <p style="font-size:12px"><b>Ghi chú:</b> ${esc($('iNote').value)||'—'}</p>
-  <div class="sign"><div><b>Người kiểm tra</b><br><i>(Ký, ghi rõ họ tên)</i></div><div><b>Trưởng bộ phận QC</b><br><i>(Ký, ghi rõ họ tên)</i></div><div><b>Phê duyệt</b><br><i>(Ký, ghi rõ họ tên)</i></div></div>`;
+  <div class="sign"><div><b>Người kiểm tra</b><br><i>(Ký, ghi rõ họ tên)</i></div><div><b>Trưởng bộ phận QC</b><br><i>(Ký, ghi rõ họ tên)</i></div><div><b>Phê duyệt</b><br><i>(Ký, ghi rõ họ tên)</i></div></div></div>`;
 }
 function exportPDF(){renderReport();const t=document.title;document.title='Bao_cao_IQC_'+($('iCert').value||'HRC');window.print();document.title=t}
 window.addEventListener('beforeprint',renderReport);
@@ -873,20 +959,20 @@ function newRec(jump){
 }
 function delRec(id){if(!confirm('Xóa phiếu này khỏi dashboard?'))return;storeRecs(loadRecs().filter(r=>r.id!==id));if(curId===id)curId=null;renderDash()}
 const pct=r=>r.stats.samples?Math.round(r.stats.ok/r.stats.samples*100):null;
-const DEC=['Chấp nhận','Giữ lại xem xét','Từ chối','Chờ quyết định'],DCL=['ok','warn','bad','info'],DCO=['var(--ok)','var(--warn)','var(--bad)','#8fa1ad'];
+const DEC=['Chấp nhận','Giữ lại xem xét','Từ chối','Chờ quyết định'],DEC3=DEC.slice(0,3),DCL=['ok','warn','bad','info'],DCO=['var(--ok)','var(--warn)','var(--bad)','#8fa1ad'];
 const decOf=r=>DEC.includes(r.info.iDec)?r.info.iDec:'Chờ quyết định';
 function renderDash(){
   const L=loadRecs(),S=L.reduce((a,r)=>({n:a.n+1,c:a.c+r.stats.coils,kg:a.kg+r.stats.kg,s:a.s+r.stats.samples,ok:a.ok+r.stats.ok}),{n:0,c:0,kg:0,s:0,ok:0});
-  const cnt=DEC.map(d=>L.filter(r=>decOf(r)===d).length);
-  $('dK').innerHTML=[[S.n,'Phiếu đã lưu'],[S.c.toLocaleString('vi-VN'),'Cuộn theo chứng chỉ'],[(S.kg/1000).toLocaleString('vi-VN',{maximumFractionDigits:1})+' tấn','Tổng khối lượng'],[S.s?Math.round(S.ok/S.s*100)+'%':'—','Tỷ lệ cuộn đạt (tổng)'],[cnt[3],'Phiếu chờ quyết định']].map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('');
-  $('dDec').innerHTML=(L.length?`<div class="stk">${cnt.map((n,i)=>n?`<i style="flex:${n};background:${DCO[i]}" title="${DEC[i]}: ${n}"></i>`:'').join('')}</div>`:'<p class="msg">Chưa có phiếu nào được lưu. Vào “Kiểm tra &amp; đối chiếu” và bấm “Lưu lại”.</p>')+`<div class="lg">${DEC.map((d,i)=>`<span><u style="background:${DCO[i]}"></u>${d}: <b>${cnt[i]}</b></span>`).join('')}</div>`;
+  const cnt=DEC3.map(d=>L.filter(r=>decOf(r)===d).length);
+  $('dK').innerHTML=[[S.n,'Phiếu đã lưu'],[S.c.toLocaleString('vi-VN'),'Cuộn theo chứng chỉ'],[(S.kg/1000).toLocaleString('vi-VN',{maximumFractionDigits:1})+' tấn','Tổng khối lượng'],[S.s?Math.round(S.ok/S.s*100)+'%':'—','Tỷ lệ cuộn đạt (tổng)']].map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('');
+  $('dDec').innerHTML=(L.length?`<div class="stk">${cnt.map((n,i)=>n?`<i style="flex:${n};background:${DCO[i]}" title="${DEC[i]}: ${n}"></i>`:'').join('')}</div>`:'<p class="msg">Chưa có phiếu nào được lưu. Vào “Kiểm tra &amp; đối chiếu” và bấm “Lưu lại”.</p>')+`<div class="lg">${DEC3.map((d,i)=>`<span><u style="background:${DCO[i]}"></u>${d}: <b>${cnt[i]}</b></span>`).join('')}</div>`;
   $('dRecent').innerHTML=L.slice(0,10).map(r=>{const p=pct(r);return `<div class="hb"><span title="${esc(r.info.iSup)}">${esc(r.info.iCert||'(chưa có số)')}</span><div><i style="width:${p||0}%;background:${p==null?'#cfd6dc':p>=100?'var(--ok)':p>=50?'var(--warn)':'var(--bad)'}"></i></div><b>${p==null?'—':p+'%'}</b></div>`}).join('')||'<p class="msg">Chưa có dữ liệu.</p>';
   const G={};L.forEach(r=>{const k=r.info.iSup||'(chưa rõ)',g=G[k]||(G[k]={n:0,c:0,s:0,ok:0,rej:0});g.n++;g.c+=r.stats.coils;g.s+=r.stats.samples;g.ok+=r.stats.ok;if(decOf(r)==='Từ chối')g.rej++});
   $('dSup').innerHTML=Object.entries(G).map(([k,g])=>`<tr><td style="text-align:left">${esc(k)}</td><td>${g.n}</td><td>${g.c.toLocaleString('vi-VN')}</td><td>${g.s}</td><td>${g.s?Math.round(g.ok/g.s*100)+'%':'—'}</td><td>${g.rej}</td></tr>`).join('')||'<tr><td colspan="6">Chưa có dữ liệu.</td></tr>';
   const q=($('dQ').value||'').toLowerCase(),f=$('dF').value;
   const R=L.filter(r=>(!f||decOf(r)===f)&&(!q||[r.info.iSup,r.info.iCert,r.info.iPO,r.info.iSpec].join(' ').toLowerCase().includes(q)));
   $('dList').innerHTML=R.map(r=>{const p=pct(r),d=decOf(r),i=r.info;
-    return `<tr class="${r.id===curId?'cur':''}"><td>${new Date(r.savedAt).toLocaleString('vi-VN')}</td><td style="text-align:left">${esc(i.iSup)}</td><td>${esc(i.iCert)}</td><td>${esc(i.iSpec)}</td><td>${r.stats.coils}</td><td>${r.stats.samples}</td><td>${p==null?'—':`<span class="tg ${p>=100?'ok':p>=50?'warn':'bad'}">${p}%</span>`}</td><td><span class="tg ${DCL[DEC.indexOf(d)]}">${d}</span></td><td>${esc(i.iQC)}</td><td><button class="b sm" onclick="openRec('${r.id}')">Mở</button> <button class="b d sm" onclick="delRec('${r.id}')">Xóa</button></td></tr>`}).join('')||'<tr><td colspan="10">Chưa có phiếu phù hợp.</td></tr>';
+    return `<tr class="${r.id===curId?'cur':''}"><td>${new Date(r.savedAt).toLocaleString('vi-VN')}</td><td style="text-align:left">${esc(i.iSup)}</td><td>${esc(i.iCert)}</td><td>${esc(i.iSpec)}</td><td>${r.stats.coils}</td><td>${r.stats.samples}</td><td>${p==null?'—':`<span class="tg ${p>=100?'ok':p>=50?'warn':'bad'}">${p}%</span>`}</td><td>${d==='Chờ quyết định'?'—':`<span class="tg ${DCL[DEC.indexOf(d)]}">${d}</span>`}</td><td>${esc(i.iQC)}</td><td><button class="b sm" onclick="openRec('${r.id}')">Mở</button> <button class="b d sm" onclick="delRec('${r.id}')">Xóa</button></td></tr>`}).join('')||'<tr><td colspan="10">Chưa có phiếu phù hợp.</td></tr>';
 }
 function exportRecs(){
   const L=loadRecs();if(!L.length)return toast('Chưa có phiếu nào để xuất.','err');
@@ -905,6 +991,38 @@ $('fRest').onchange=async e=>{
     const out=[...M.values()].sort((a,b)=>b.savedAt.localeCompare(a.savedAt));storeRecs(out);renderDash();toast('Đã khôi phục '+A.length+' phiếu.','ok');
   }catch(err){toast('File sao lưu không hợp lệ.','err')}
 };
+/* ===== Liên kết OneDrive ===== */
+const OD_DEFAULT='https://onedrive.live.com/?redeem=aHR0cHM6Ly8xZHJ2Lm1zL2YvYy80OTk5N2FjOTNjN2IxMTIyL0lnQTZxWEg5RjZRaFNiUkN0eVl1b2VxbkFlVzBSc25QZ1NDa2VkVDhsNG5kSldvP2U9T2hBYVBs&id=49997AC93C7B1122%21sfd71a93aa4174921b442b7262ea1eaa7&cid=49997AC93C7B1122&sb=name&sd=1';
+(function(){let c={};try{c=JSON.parse(localStorage.getItem('hrc_od')||'{}')}catch(e){}
+  $('odLink').value=c.link||OD_DEFAULT;$('odId').value=c.id||'';
+  ['odLink','odId'].forEach(k=>$(k).addEventListener('input',()=>{try{localStorage.setItem('hrc_od',JSON.stringify({link:$('odLink').value.trim(),id:$('odId').value.trim()}))}catch(e){}}));})();
+function odOpen(){const u=$('odLink').value.trim()||OD_DEFAULT;window.open(u,'_blank','noopener');msg('m2','Đã mở OneDrive trong tab mới. Tải file MTC về máy rồi bấm “Nhập từ Excel / PDF / scan”, hoặc dùng “Nhập từ link chia sẻ của 1 file…”.','ok')}
+function odInject(file){const dt=new DataTransfer();dt.items.add(file);$('f2').files=dt.files;$('f2').dispatchEvent(new Event('change'))}
+const odLoadScript=src=>new Promise((ok,no)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>no(new Error('Không tải được thư viện OneDrive (kiểm tra kết nối mạng).'));document.head.appendChild(s)});
+async function odPick(){
+  const id=$('odId').value.trim();
+  if(!id){$('odBox').open=true;return msg('m2','Chọn file trực tiếp từ OneDrive cần Client ID của ứng dụng Microsoft (xem hướng dẫn trong khung “Kết nối OneDrive”). Tạm thời có thể dùng “Mở OneDrive MTC” hoặc “Nhập từ link chia sẻ của 1 file…”.','err')}
+  try{
+    await odLoadScript('https://js.live.net/v7.2/OneDrive.js');
+    OneDrive.open({clientId:id,action:'download',multiSelect:false,advanced:{filter:'.xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg',redirectUri:location.href.split('#')[0].split('?')[0]},
+      success:async r=>{try{const f=r.value[0],url=f['@microsoft.graph.downloadUrl']||f['@content.downloadUrl'];
+          if(!url)throw new Error('OneDrive không trả về đường dẫn tải file.');
+          msg('m2','Đang tải '+f.name+' từ OneDrive…');const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);
+          odInject(new File([await res.blob()],f.name))}catch(e){msg('m2','Lỗi tải file từ OneDrive: '+e.message,'err')}},
+      cancel:()=>{},error:e=>msg('m2','Lỗi OneDrive: '+((e&&e.message)||e),'err')});
+  }catch(e){msg('m2','Lỗi: '+e.message,'err')}
+}
+async function odPaste(){
+  const link=(prompt('Dán link chia sẻ của FILE MTC trên OneDrive (dạng https://1drv.ms/... hoặc https://onedrive.live.com/...):')||'').trim();if(!link)return;
+  try{
+    const b64='u!'+btoa(unescape(encodeURIComponent(link))).replace(/=+$/,'').replace(/\//g,'_').replace(/\+/g,'-'),base='https://api.onedrive.com/v1.0/shares/'+b64;
+    msg('m2','Đang tải file từ OneDrive…');
+    const meta=await fetch(base+'/driveItem?$select=name,folder,size');if(!meta.ok)throw new Error('không truy cập được link (HTTP '+meta.status+') – link phải cho phép “bất kỳ ai có link”.');
+    const m=await meta.json();if(m.folder)throw new Error('đây là link THƯ MỤC; hãy mở thư mục, chọn 1 file và lấy link chia sẻ của file đó.');
+    const res=await fetch(base+'/root/content');if(!res.ok)throw new Error('HTTP '+res.status);
+    odInject(new File([await res.blob()],m.name||'MTC.pdf'));
+  }catch(e){msg('m2','Không tải trực tiếp được: '+e.message+' Nếu trình duyệt chặn truy cập chéo trang (CORS), hãy dùng “Mở OneDrive MTC”, tải file về rồi nhập.','err')}
+}
 headMTC();headAct();renderMTC();renderCk();renderAct();renderReport();renderDash();
 </script>
 </body>
